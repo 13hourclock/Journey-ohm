@@ -1,0 +1,69 @@
+# Builds the Journey Ohm APK on GitHub (no local Android SDK needed).
+# - Every push to master and every manual run: a debug APK (installable, debug-signed).
+# - If the repo secrets below exist: also a release APK signed with YOUR keystore,
+#   so it installs over the current phone build. Secrets never appear in logs or the repo.
+#     KEYSTORE_BASE64   base64 of the .jks/.keystore file
+#     KEYSTORE_PASSWORD keystore password
+#     KEY_ALIAS         key alias
+#     KEY_PASSWORD      key password (often the same as KEYSTORE_PASSWORD)
+# Download the APKs from the run's "Artifacts" section (Actions tab).
+name: Build APK
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      KS: ${{ secrets.KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - name: Install and sync
+        run: |
+          npm ci --ignore-scripts
+          npx cap sync android
+      - name: Node gates (logic only; timing benches skipped on shared runners)
+        run: |
+          for t in traditions dive gesture systems place_trad haptics drawn_p answers autojam abilities gasfloat senses rare; do
+            node tests/${t}_test.mjs | tail -1
+          done
+      - name: Debug APK
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Signed release APK (only if keystore secrets are set)
+        if: ${{ env.KS != '' }}
+        env:
+          KSP: ${{ secrets.KEYSTORE_PASSWORD }}
+          KA: ${{ secrets.KEY_ALIAS }}
+          KP: ${{ secrets.KEY_PASSWORD }}
+        working-directory: android
+        run: |
+          echo "$KS" | base64 -d > "$RUNNER_TEMP/release.jks"
+          ./gradlew --no-daemon assembleRelease
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          U=app/build/outputs/apk/release/app-release-unsigned.apk
+          $BT/zipalign -f -p 4 $U app/build/outputs/apk/release/aligned.apk
+          $BT/apksigner sign --ks "$RUNNER_TEMP/release.jks" --ks-pass env:KSP --ks-key-alias "$KA" --key-pass env:KP \
+            --out app/build/outputs/apk/release/JourneyOhm-release.apk app/build/outputs/apk/release/aligned.apk
+          rm -f "$RUNNER_TEMP/release.jks" app/build/outputs/apk/release/aligned.apk
+      - name: Name the APKs by version
+        run: |
+          V=$(node -p "require('./package.json').version")
+          mkdir out
+          cp android/app/build/outputs/apk/debug/app-debug.apk out/JourneyOhm-v$V-debug.apk
+          [ -f android/app/build/outputs/apk/release/JourneyOhm-release.apk ] && cp android/app/build/outputs/apk/release/JourneyOhm-release.apk out/JourneyOhm-v$V.apk || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: journey-ohm-apk
+          path: out/*.apk
