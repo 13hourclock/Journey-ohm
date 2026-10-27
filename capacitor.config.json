@@ -1,0 +1,6 @@
+{
+  "appId": "com.lensure.journeyohm",
+  "appName": "Journey Ohm (dev)",
+  "webDir": "www",
+  "android": { "backgroundColor": "#000000" }
+}

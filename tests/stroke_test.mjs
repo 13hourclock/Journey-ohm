@@ -1,0 +1,23 @@
+// systems: stroke shapes (spiral / hook / '<' '>' / rub / loop) - node, no browser
+import { analyze, isSpiral, isHook, arrowDir, inDot, isRub } from '../www/js/stroke.js';
+let fails = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) fails++; };
+const arc = (cx, cy, r0, r1, a0, a1, n = 80, t0 = 0) => Array.from({ length: n }, (_, i) => { const f = i / (n - 1), a = a0 + (a1 - a0) * f, r = r0 + (r1 - r0) * f; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r, t0 + i * 8]; });
+const line = (x0, y0, x1, y1, n = 20, t0 = 0) => Array.from({ length: n }, (_, i) => [x0 + (x1 - x0) * i / (n - 1), y0 + (y1 - y0) * i / (n - 1), t0 + i * 8]);
+const spiral = arc(200, 300, 8, 90, 0, Math.PI * 4.2), spiralIn = arc(200, 300, 90, 10, 0, -Math.PI * 3.4), spiralSmall = arc(200, 300, 10, 70, 0, Math.PI * 3.2);
+const loop = arc(200, 300, 80, 80, 0, Math.PI * 2.05), loop2 = arc(200, 300, 80, 84, 0, Math.PI * 3.1);
+const hookTop = arc(200, 200, 40, 40, Math.PI, Math.PI * 2.5, 50), hook = [...hookTop, ...line(200, 240, 200, 275, 8, 400)];
+const lt = [...line(260, 160, 200, 200, 10), ...line(200, 200, 260, 240, 10, 90)], gt = [...line(160, 160, 220, 200, 10), ...line(220, 200, 160, 240, 10, 90)];
+const flat = line(100, 300, 400, 300, 40), rub = []; for (let k = 0; k < 6; k++) rub.push(...line(k % 2 ? 300 : 200, 300 + k, k % 2 ? 200 : 300, 301 + k, 8, k * 70));
+ok(isSpiral(analyze(spiral)), 'outward spiral (2.1 turns) = spiral');
+ok(isSpiral(analyze(spiralIn)), 'inward counter-clockwise spiral (1.7 turns) = spiral');
+ok(isSpiral(analyze(spiralSmall)), 'small 1.6-turn spiral = spiral');
+ok(!isSpiral(analyze(loop)), 'closed loop (1 turn) is NOT a spiral (stays the herd loop)');
+ok(!isSpiral(analyze(loop2)), 'loop drawn round 1.5 times at the same size is NOT a spiral');
+ok(!isSpiral(analyze(flat)) && !isHook(analyze(flat)), 'straight stir is neither');
+const H = analyze(hook); ok(isHook(H), "'?' top = hook");
+ok(inDot(H, 200, 300), 'a tap below the hook end is its dot'); ok(!inDot(H, 330, 120), 'a tap far away is not');
+ok(!isHook(analyze(loop)) && !isHook(analyze(spiral)), 'loops and spirals are not hooks');
+ok(!isHook(analyze(arc(200, 200, 40, 40, Math.PI, 0, 50))), 'a counter-clockwise curl is not a hook');
+ok(arrowDir(analyze(lt)) === '<', "'<' = undo"); ok(arrowDir(analyze(gt)) === '>', "'>' = redo"); ok(arrowDir(analyze(flat)) === null, 'a line is no arrow');
+ok(isRub(rub, 500), 'rub (6 quick back-and-forth) = erase'); ok(!isRub(flat, 300), 'one stroke is not a rub');
+console.log(fails ? 'STROKE FAIL ' + fails : 'STROKE OK'); process.exit(fails ? 1 : 0);

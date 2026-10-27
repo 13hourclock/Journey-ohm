@@ -1,0 +1,28 @@
+// v0.0.10 herd (C #7): call answers by context + arrives on a beat; loop polygon; group drag; home saved in brain + drifts by gene x context
+import { createHerd, polyHas } from '../www/js/herd.js';
+import { makeRecipe, OPTS } from '../www/js/recipe.js';
+let fail = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) fail++; };
+const H = {}, notes = []; const bus = { on: (t, f) => (H[t] = H[t] || []).push(f), post: e => (H[e.type] || []).forEach(f => f(e)), note: e => notes.push(e) };
+let T = 0; const spb = .5; const music = { now: () => T, beat: () => T / spb, spb: () => spb, timeOfBeat: b => b * spb };
+const mk = (id, x, social) => { const r = makeRecipe(100 + id); return { id, seed: 100 + id, recipe: r.id, scale: 'ohm', g: { r: .5, social, calm: .5, float: 0 }, body: { x, y: 0, vx: 0, vy: 0, calm: 5 } }; };
+const ohms = [mk(1, 0, .5), mk(2, 2, .95), mk(3, 3, .05), mk(4, 40, 1)];
+const mem = {}; const brain = { remember: (o, k, key, d) => { mem[o.id] = d; }, get: (o, k, key) => mem[o.id] ? { data: mem[o.id] } : null, loaded: true };
+const sim = { opts: OPTS, ohm: ohms[0], ohms, byId: new Map(ohms.map(o => [o.id, o])), sig: {}, world: { harmonyAt: () => .5 } };
+const h = createHerd(sim, bus, music, brain);
+const step = dt => { for (const o of ohms) { o.body.x += o.body.vx * dt; o.body.y += o.body.vy * dt; } T += dt; h.tick(); };
+bus.post({ type: 'herd.call', x: 5, y: 0 });
+ok(h.called.has(1), 'focus ohm always answers (no group)');
+ok(h.called.has(2) && !h.called.has(3), 'social near ohm answers, unsocial one stays (context, not a role)');
+ok(!h.called.has(4), 'far ohm does not answer');
+const a = h.called.get(1); ok(Math.abs(a.beat - Math.round(a.beat)) < 1e-9, `arrival is on a beat (${a.beat})`);
+for (let i = 0; i < 400 && h.called.size; i++) step(1 / 60);
+ok(!h.called.size && Math.abs(ohms[0].body.x - 5) < .6, `called ohm arrived near the spot (x ${ohms[0].body.x.toFixed(2)})`);
+const arr = notes.filter(n => n.herd); ok(arr.length >= 1 && arr.every(n => Math.abs(n.t / spb - Math.round(n.t / spb)) < .05), 'arrival sounds on a beat');
+const sq = [[0, 0], [10, 0], [10, 10], [0, 10]]; ok(polyHas(sq, 5, 5) && !polyHas(sq, 15, 5), 'loop polygon test');
+bus.post({ type: 'herd.select', ids: [2, 3] }); sim.sig[2] = { 'in.grabX': 1 }; h.tick(); const x3 = ohms[2].body.x; ohms[1].body.x += 1; h.tick();
+ok(Math.abs(ohms[2].body.x - x3 - 1) < 1e-9, 'dragging a group member moves the group'); sim.sig[2] = {};
+bus.post({ type: 'herd.home', ids: [2, 3], x: 0, y: 0 }); ok(ohms[1].homePos && ohms[1].home === undefined && mem[2] && mem[3], 'home place kept on the ohm (homePos, not the key field) + in its brain');
+let pulls = ohms.map(o => h.pull(o)); ok(new Set(pulls.map(p => p.toFixed(3))).size > 1, `drift-home strength varies continuously ${pulls.map(p => p.toFixed(2))}`);
+OPTS.herd.home.pull = 'stay'; ok(h.pull(ohms[1]) === 0, 'toggle: none drift'); OPTS.herd.home.pull = 'context';
+OPTS.herd.on = false; h.called.clear(); bus.post({ type: 'herd.call', x: 0, y: 0 }); ok(!h.called.size, 'toggle off: nobody is called'); OPTS.herd.on = true;
+console.log(fail ? 'HERD_FAIL' : 'HERD_OK');

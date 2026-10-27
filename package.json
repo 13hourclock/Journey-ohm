@@ -1,0 +1,17 @@
+{
+  "name": "journey-ohm",
+  "version": "0.0.30",
+  "private": true,
+  "description": "The Journey Ohm (Resonance 2.0) - step 1 sound playground",
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/cli": "8.5.3",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/share": "8.0.3"
+  },
+  "devDependencies": {
+    "canvas": "^3.2.3"
+  },
+  "type": "module"
+}
