@@ -59,6 +59,9 @@ says **which category each item is in**.
 | M5 | Music | **What happens when traditions meet** (learning each other's accents, blended songs, a craze crossing planets, new hybrid traditions). The hook exists (bus 'trad.meet'); outcomes not designed. | Wilbow 9:37 PM Oct 29: "We don't need to calculate all those outcomes yet" |
 | O3 | Ohms | Stylize the ohms further | Wilbow 9:24 PM Oct 29: later, not a priority |
 | W1 | World | Pyramids as resonance / synchronization devices found on planets | earlier chat; planet exploration not built |
+| X1 | All | **Work in passes** (Wilbow 11:43 PM Oct 29: "everything currently visible in the game a place holder ... needs done in passes"): Pass 0 placeholder, 1 works, 2 connected (feeds and reacts to other systems), 3 styled. Every system moves one pass at a time, each with his OK. | keep discussing (11:45 PM: "keep the other ideas in discussion for a while") |
+| X2 | All | **Explore before building**: one-page idea sheets per connection (options + sketches, nothing built until he picks); prototype scenes behind dev switches (one app); one full slice first (e.g. sound -> visuals through every pass) to set the pattern | keep discussing |
+| X3 | All | **System map** (built 11:45 PM Oct 29, exploration only): every system, its pass, and every connection marked connected / thin / placeholder / missing. Page: https://claude.ai/artifact/JtEN4zwcirU6ptx589VjmD ; copy: docs/SYSTEM_MAP.html | for choosing what to explore next |
 
 ## 5. FIXES (bugs, no taste call)
 

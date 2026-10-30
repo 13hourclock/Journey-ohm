@@ -1,0 +1,176 @@
+<title>Journey Ohm System Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a constellation of systems (tap one) above the list of every connection, grouped by system; status in shape + colour. */
+:root {
+  --bg: #eef0f6; --panel: #ffffff; --ink: #1d1f2e; --muted: #5d6178; --line: #cfd3e3; --glow: #c9821f; --glow-soft: #f6e3c4;
+  --ok: #2f8a5b; --thin: #b7791f; --ph: #6b6f8a; --miss: #b4413a;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif; --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif; --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #12131f; --panel: #1b1d2d; --ink: #e8e6f0; --muted: #9a9cb6; --line: #2f3248; --glow: #f0a94a; --glow-soft: #3a2d1a; --ok: #5cc28c; --thin: #e0a84a; --ph: #8e92ad; --miss: #e2766d; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #12131f; --panel: #1b1d2d; --ink: #e8e6f0; --muted: #9a9cb6; --line: #2f3248; --glow: #f0a94a; --glow-soft: #3a2d1a; --ok: #5cc28c; --thin: #e0a84a; --ph: #8e92ad; --miss: #e2766d; color-scheme: dark; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 20px; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 64ch; margin: 8px 0 0; }
+.eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--glow); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chip { font-family: var(--f-mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.s-ok { color: var(--ok); } .s-thin { color: var(--thin); } .s-ph { color: var(--ph); } .s-miss { color: var(--miss); }
+.s-miss.chip, .s-ph.chip { border-style: dashed; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filters button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.filters button[aria-pressed="true"] { border-color: var(--glow); background: var(--glow-soft); }
+.filters button:focus-visible, .sys:focus-visible, .node:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+.mapbox { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; }
+svg { display: block; width: 100%; min-width: 620px; height: auto; }
+.edge { fill: none; stroke-width: 1.6; opacity: .55; transition: opacity .2s; }
+.edge.ok { stroke: var(--ok); } .edge.thin { stroke: var(--thin); stroke-dasharray: 2 4; } .edge.ph { stroke: var(--ph); stroke-dasharray: 7 5; } .edge.miss { stroke: var(--miss); stroke-dasharray: 3 7; }
+.edge.dim { opacity: .07; } .edge.hot { opacity: 1; stroke-width: 2.4; }
+.node { cursor: pointer; }
+.node circle.halo { fill: var(--glow-soft); opacity: 0; transition: opacity .2s; }
+.node.on circle.halo { opacity: 1; }
+.node circle.core { fill: var(--panel); stroke: var(--ink); stroke-width: 1.4; }
+.node text { fill: var(--ink); font-family: var(--f-body); font-size: 12.5px; font-weight: 700; text-anchor: middle; }
+.node text.pass { font-family: var(--f-mono); font-size: 10px; font-weight: 400; fill: var(--muted); }
+.node.dim { opacity: .35; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.sys { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.sys.on { border-color: var(--glow); box-shadow: 0 0 0 3px var(--glow-soft); }
+.sys header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.sys p { margin: 0; color: var(--muted); font-size: 14px; }
+.pass { display: inline-flex; gap: 3px; align-items: center; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.pass i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--muted); display: inline-block; }
+.pass i.f { background: var(--glow); border-color: var(--glow); }
+ul.links { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+ul.links li { display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 14px; align-items: start; }
+ul.links li .to { font-weight: 700; }
+ul.links li .note { color: var(--muted); display: block; font-size: 13px; }
+.passes { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.passes div { border-top: 2px solid var(--line); padding-top: 8px; }
+.passes b { font-family: var(--f-mono); font-size: 12px; color: var(--glow); display: block; }
+.passes span { font-size: 14px; color: var(--muted); }
+footer { color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">The Journey Ohm · exploration, not a build plan</div>
+    <h1>Journey Ohm System Map</h1>
+    <p class="lede">Every system in the game today, how far along it is, and which connections between systems exist. Read from the code on Oct 29 2026 (main @ 72664d1). Tap a system to see its connections. Nothing here is decided: it is for choosing what to explore next.</p>
+  </header>
+
+  <section class="passes" aria-label="Passes">
+    <div><b>Pass 0 · placeholder</b><span>exists so other things can work</span></div>
+    <div><b>Pass 1 · works</b><span>does its own job properly</span></div>
+    <div><b>Pass 2 · connected</b><span>reacts to and feeds the other systems</span></div>
+    <div><b>Pass 3 · styled</b><span>final look, sound and feel</span></div>
+  </section>
+
+  <div class="legend" aria-label="Connection status">
+    <span><span class="chip s-ok">connected</span> working link</span>
+    <span><span class="chip s-thin">thin</span> exists but barely felt</span>
+    <span><span class="chip s-ph">placeholder</span> stand-in, needs design</span>
+    <span><span class="chip s-miss">missing</span> not there yet</span>
+  </div>
+
+  <div class="filters" role="group" aria-label="Show connections">
+    <button id="f-all" data-f="all" aria-pressed="true">All</button>
+    <button id="f-ok" data-f="ok" aria-pressed="false">Connected</button>
+    <button id="f-thin" data-f="thin" aria-pressed="false">Thin</button>
+    <button id="f-ph" data-f="ph" aria-pressed="false">Placeholder</button>
+    <button id="f-miss" data-f="miss" aria-pressed="false">Missing</button>
+  </div>
+
+  <div class="mapbox"><svg id="map" viewBox="0 0 720 560" role="img" aria-label="Systems and their connections"></svg></div>
+
+  <section>
+    <h2>Systems and their connections</h2>
+  </section>
+  <div class="grid" id="cards"></div>
+
+  <footer>Sources: the influence matrix (matrix.js, influence.js default rows), look/audio.js, traditions.js, guest.js, bodyplan.js, BOARD.md and SUMMARY.md in 13hourclock/Journey-ohm. Pass levels are a first reading for discussion, not a verdict.</footer>
+</div>
+
+<script>
+const SYS = [
+  { id: 'sound', name: 'Sound engine', pass: 1, a: 0, note: 'Voices, 73-instrument palette, effects, reverb. Works; static reduced by the audio budget (Oct 29), not gone on a phone.' },
+  { id: 'music', name: 'Music', pass: 1, a: 1, note: 'Shared clock, key, moving harmony, jams, songs and charts. Works alone; you have little say over it (key control is in discussion).' },
+  { id: 'trad', name: 'Traditions', pass: 1, a: 2, note: '29 traditions with real scales, cycles and chord charts. Guests keep their home accent; what happens when traditions meet is not designed yet.' },
+  { id: 'body', name: 'Ohm bodies', pass: 1, a: 3, note: 'Soft-body ring, body plans, legs, appendages, variety genes (pending). Shapes now survive low detail.' },
+  { id: 'mind', name: 'Ohm minds', pass: 1, a: 4, note: 'Brains, learning, teaching, roles in jams, bystanders, crazes. Works; shows little on screen.' },
+  { id: 'look', name: 'Look', pass: 1, a: 5, note: 'Shading, faces, auras, kaleidoscope, light waves on notes. The style is still a stand-in for your later stylising.' },
+  { id: 'world', name: 'World', pass: 1, a: 6, note: 'Planets, terrain, water, caves, weather, day and night, plants, critters, wind rocks, lenses.' },
+  { id: 'zoom', name: 'Zoom and scales', pass: 1, a: 7, note: 'One smooth zoom from inside an ohm to galaxies. Top priority for smoothness.' },
+  { id: 'touch', name: 'Gestures', pass: 1, a: 8, note: 'Taps, drags, spirals, loops, pinches, conducting, drawn instruments. Several known clashes (GESTURES.md).' },
+  { id: 'things', name: 'Things and instruments', pass: 0, a: 9, note: 'Effect objects, drawn strings and drums, egg words, clay. Partly built, mostly behind switches.' },
+  { id: 'prog', name: 'Progression', pass: 0, a: 10, note: 'Experience, teachers, masters, rare ohms, abilities (12 of 25). Little of it changes what you can do yet.' },
+];
+const LINKS = [
+  ['touch', 'sound', 'ok', 'Where and how hard you touch shapes the note (touch position to filter, pressure to loudness).'],
+  ['sound', 'body', 'thin', 'An ohm throbs with its own loudness (sound level to body throb). One wire only.'],
+  ['sound', 'look', 'ok', 'Notes start soft light waves; loudness makes an ohm glow; chords and key changes turn the kaleidoscope.'],
+  ['music', 'look', 'thin', 'Chord and key reach the kaleidoscope only. Song sections, hooks and endings make small bursts.'],
+  ['body', 'sound', 'ok', 'Squashing, stretching and impacts change the sound (squash to filter, impact to pitch bend).'],
+  ['sound', 'body', 'ok', 'The instrument decides the body plan (a hat bristles, a snare has feelers, a bass hangs a keel). Shape never changes the sound.'],
+  ['world', 'sound', 'ok', 'Ground and weather colour the sound: wet ground damps, hollow ground deepens, rock brightens.'],
+  ['world', 'music', 'thin', 'Sky mood: night is softer and lower, rain thins notes. One switch, gentle.'],
+  ['music', 'world', 'thin', 'Plants grow from music; songs and big moments flash the world. No lasting change to places.'],
+  ['world', 'mind', 'thin', 'Wind ohms drift to wind rocks. Little else in the world changes what ohms do.'],
+  ['trad', 'music', 'ok', 'The planet\'s tradition sets tuning, tempo, rhythm cycle, chords and song shape.'],
+  ['trad', 'look', 'ph', 'Aura palettes and patterns are neutral stand-ins; 21 traditions borrow a nearby family\'s look.'],
+  ['trad', 'trad', 'ph', 'Guests play their home accent in a host jam and each meeting is logged. Learning, blending and hybrids are not designed (discussion M5).'],
+  ['mind', 'music', 'ok', 'Ohms jam, take roles, learn tunes, teach each other, grow jams into songs.'],
+  ['touch', 'music', 'thin', 'Your notes count as one vote among all ohms; songs ignore you; only the jam view changes key (discussion K1).'],
+  ['touch', 'body', 'ok', 'Pinch, squish, stretch, flick and carry ohms; walking legs step as they move.'],
+  ['zoom', 'sound', 'thin', 'Zoom depth is available as a signal, but little sound changes as you zoom between scales.'],
+  ['zoom', 'look', 'ok', 'Detail follows the zoom; far ohms become light specks.'],
+  ['prog', 'touch', 'miss', 'Experience or teachers do not yet unlock new gestures or controls.'],
+  ['prog', 'look', 'thin', 'Experience deepens skin marks; master teachers and rare ohms have looks in progress.'],
+  ['things', 'sound', 'ok', 'Effect objects change the sound of ohms near them; drawn strings tune to the jam.'],
+  ['things', 'look', 'ph', 'Things use simple placeholder looks until Visuals designs them.'],
+  ['music', 'music', 'ph', 'Several song groups at once play over each other; only one drives the shared chord (discussion M4).'],
+  ['look', 'sound', 'miss', 'Nothing you see feeds back into sound yet (light, colour or crowding never shapes a voice).'],
+  ['mind', 'look', 'thin', 'Gaze, lids and posture follow partners and jams; learning and mood barely show.'],
+];
+const S = Object.fromEntries(SYS.map(s => [s.id, s]));
+const W = 720, H = 560, CX = 360, CY = 290, RX = 270, RY = 225, N = SYS.length;
+for (const s of SYS) { const a = -Math.PI / 2 + s.a / N * Math.PI * 2; s.x = CX + Math.cos(a) * RX; s.y = CY + Math.sin(a) * RY; }
+const svg = document.getElementById('map'), NS = 'http://www.w3.org/2000/svg', el = (t, at = {}) => { const e = document.createElementNS(NS, t); for (const k in at) e.setAttribute(k, at[k]); return e; };
+const label = { ok: 'connected', thin: 'thin', ph: 'placeholder', miss: 'missing' };
+let filter = 'all', sel = null;
+function draw() {
+  svg.textContent = '';
+  const gE = el('g'), gN = el('g'); svg.append(gE, gN);
+  LINKS.forEach(([a, b, st], i) => { if (filter !== 'all' && st !== filter) return; const A = S[a], B = S[b]; let d;
+    if (a === b) { const ox = (A.x - CX) * .22, oy = (A.y - CY) * .22; d = `M${A.x},${A.y} c${ox - 40},${oy - 60} ${ox + 40},${oy - 60} 0,0`; }
+    else { const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, k = (i % 2 ? .18 : -.18); d = `M${A.x},${A.y} Q${mx + (CY - my) * k},${my + (mx - CX) * k} ${B.x},${B.y}`; }
+    const p = el('path', { d, class: 'edge ' + st }); if (sel) p.classList.add(a === sel || b === sel ? 'hot' : 'dim'); gE.append(p); });
+  for (const s of SYS) { const g = el('g', { class: 'node', tabindex: 0, role: 'button', 'aria-label': s.name + ', pass ' + s.pass });
+    if (sel) g.classList.add(s.id === sel || LINKS.some(([a, b, st]) => (filter === 'all' || st === filter) && ((a === sel && b === s.id) || (b === sel && a === s.id))) ? 'on' : 'dim');
+    if (s.id === sel) g.classList.add('on'); g.classList.remove(s.id === sel ? 'dim' : '_');
+    g.append(el('circle', { class: 'halo', cx: s.x, cy: s.y, r: 40 }), el('circle', { class: 'core', cx: s.x, cy: s.y, r: 26 }));
+    const words = s.name.split(' '); const t = el('text', { x: s.x, y: s.y + (words.length > 1 ? 44 : 46) }); t.textContent = s.name; gN.append(g); g.append(t);
+    const ps = el('text', { x: s.x, y: s.y + 4, class: 'pass' }); ps.textContent = 'P' + s.pass; g.append(ps);
+    const pick = () => { sel = sel === s.id ? null : s.id; draw(); cards(); const c = document.getElementById('card-' + s.id); if (sel && c) c.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' }); };
+    g.addEventListener('click', pick); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } }); }
+}
+function cards() {
+  const host = document.getElementById('cards'); host.textContent = '';
+  for (const s of SYS) { const ls = LINKS.filter(([a, b, st]) => (a === s.id || b === s.id) && (filter === 'all' || st === filter)); if (filter !== 'all' && !ls.length) continue;
+    const c = document.createElement('article'); c.className = 'sys' + (sel === s.id ? ' on' : ''); c.id = 'card-' + s.id; c.tabIndex = -1;
+    const dots = [0, 1, 2, 3].map(i => `<i class="${i <= s.pass ? 'f' : ''}"></i>`).join('');
+    c.innerHTML = `<header><h2>${s.name}</h2><span class="pass" title="Pass ${s.pass}">${dots}&nbsp;P${s.pass}</span></header><p>${s.note}</p>`;
+    const ul = document.createElement('ul'); ul.className = 'links';
+    for (const [a, b, st, n] of ls) { const other = a === s.id ? S[b] : S[a], dir = a === b ? 'within itself' : a === s.id ? 'to ' + other.name : 'from ' + other.name;
+      const li = document.createElement('li'); li.innerHTML = `<span class="chip s-${st}">${label[st]}</span><span><span class="to">${dir}</span><span class="note">${n}</span></span>`; ul.append(li); }
+    c.append(ul); host.append(c); }
+}
+document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => { filter = b.dataset.f; document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); draw(); cards(); }));
+draw(); cards();
+</script>
