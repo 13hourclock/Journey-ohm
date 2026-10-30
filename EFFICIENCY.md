@@ -1,7 +1,7 @@
 # EFFICIENCY: the token-saving protocol for every AI on The Journey Ohm
 
 Wilbow, Oct 30 2026, 12:07 AM MDT: "make sure other instances and AIs use a protocol that preserves tokens through metrics that don't reduce the game development."
-Applies to every Claude chat, Grok and any other AI. Saving tokens must never mean skipping what the game needs: cut repetition, rework and long reads, not checks that catch real problems.
+Applies to every Claude chat, Grok and any other AI tool (they all start from AGENTS.md). Saving tokens must never mean skipping what the game needs: cut repetition, rework and long reads, not checks that catch real problems.
 
 ## Session rules
 1. **One task per chat.** Start a new chat for each board item. Kickoff line: *"Attach 13hourclock/Journey-ohm, read BOARD.md and GROK_HANDOFF.md, then: [task]."* Long chats re-read their whole history every turn: start fresh rather than continue.
