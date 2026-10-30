@@ -13,7 +13,7 @@
 // rest ring (squish / stretch / pinch follow) x the posture. No shadowBlur / filter / gradient per frame. opts.realLook.ohmChar = false = off.
 import { hsl2rgb } from './palette.js';
 import { TRADITIONS } from './aura.js';
-import { shapeK, extentK, appRoom, paintBehind, paintOnSkin, stepSegments, paintSegment, drawWalkLegs, BODY_PLAN } from '../bodyplan.js';   // body plans (old game), switch BODY_PLAN.on
+import { shapeK, extentK, appRoom, paintBehind, paintOnSkin, stepSegments, paintSegment, drawWalkLegs, BODY_PLAN, paintPattern } from '../bodyplan.js';   // body plans (old game), switch BODY_PLAN.on
 // tune (playtwice 'ohm.tune': a phrase played twice is the ohm's tune): a short warm glow wells up INSIDE the ohm (kept within its
 // smallest radius, so never past its skin), shrinks and settles, and as it settles the skin marks (B) deepen a little (tuneDeep per tune taught, o.tune.n, up to 2;
 // undo takes o.tune back and the marks with it). One baked 64 px sprite, one drawImage per flashing ohm; nothing when no flash is live.
@@ -56,6 +56,7 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     if (bs) { const sy = H + ymax + (legs ? Rd * .26 : 0), rx = xmax * 1.25, ry = xmax * .28, gr = x.createRadialGradient(H, sy, 0, H, sy, rx); gr.addColorStop(0, `rgba(6,5,8,${O.shadowA})`); gr.addColorStop(.45, `rgba(6,5,8,${O.shadowA * .62})`); gr.addColorStop(.8, `rgba(6,5,8,${O.shadowA * .16})`); gr.addColorStop(1, 'rgba(6,5,8,0)');
       x.save(); x.translate(H, sy); x.scale(1, ry / rx); x.translate(-H, -sy); x.fillStyle = gr; x.fillRect(H - rx, sy - rx, rx * 2, rx * 2); x.restore(); }   // the contact shadow baked under a grounded ohm (far tier)
     const pt = a => { const r0 = rr * g.r * shapeK(g, a); return [H + Math.cos(a) * r0 / Math.sqrt(g.aspect), H + Math.sin(a) * r0 * Math.sqrt(g.aspect)]; };
+    if (g.pat && g.pat.glow) { const gg = x.createRadialGradient(H, H, Rd * .7, H, H, Rd * (1.25 + g.pat.glow * .35)); gg.addColorStop(0, rgba(C.pale, .22 * g.pat.glow)); gg.addColorStop(1, rgba(C.pale, 0)); x.fillStyle = gg; x.fillRect(0, 0, w, w); }   // variety: an inner glow some ohms are born with
     if (g.plan) paintBehind(x, g, H, Rd, C, rgba, pt, ymax, dx);   // body plan appendages behind the body (spikes, fronds, feelers, tail, keel, fins, bubbles)
     if (legs) { // tapered legs behind the body: hip under the belly, a small rounded foot; shaded (lighter toward the light), no stroke
       const NL = g.plan ? Math.max(2, g.legs | 0) : 2, LL = g.plan ? (g.legLen || 1) : 1, LEGS = []; for (let j = 0; j < NL; j++) { const u = NL === 2 ? (j ? 1 : -1) : -1 + 2 * j / (NL - 1); LEGS.push(u); }
@@ -65,6 +66,7 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
         const fg = x.createRadialGradient(fx - Rd * .03, fy - Rd * .03, 0, fx, fy, Rd * .11); fg.addColorStop(0, rgba(C.base, 1)); fg.addColorStop(1, rgba(C.deep, 1));
         x.fillStyle = fg; x.beginPath(); x.ellipse(fx + sx * Rd * .03, fy, Rd * .1, Rd * .055, 0, 0, TAU); x.fill(); } }
     x.save(); ringPath(x, PX, PY, n); x.fillStyle = rgba(C.base, 1); x.fill(); x.clip();
+    if (g.pat) { const p = g.pat, C2 = hsl2rgb(((C.hue + p.dh) % 360 + 360) % 360, Math.min(.5, C.sat * 1.5 + .06), C.lit * (p.dh > 0 ? .78 : 1.22)); paintPattern(x, g, H, Rd, C, C2, rgba, xmax, ymax); }   // variety: the ohm's own born pattern
     if (g.plan) paintOnSkin(x, g, H, Rd, C, rgba, ymax, xmax);   // body plan marks on the skin (a kick's band, a shell's plates)
     // B: skin marks, soft-edged (radial / linear gradients), deeper with xp
     if (O.skin && depth > .01) { const a = .55 * depth;
@@ -91,6 +93,8 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     // a soft specular sheen (wet-skin), small and toward the light
     const sx = H + dx * Rd * .42, sy = H + dy * Rd * .42 * Math.sqrt(g.aspect); gr = x.createRadialGradient(sx, sy, 0, sx, sy, Rd * .3); gr.addColorStop(0, 'rgba(255,250,240,.34)'); gr.addColorStop(.4, 'rgba(255,250,240,.1)'); gr.addColorStop(1, 'rgba(255,250,240,0)'); x.fillStyle = gr; x.fillRect(sx - Rd * .3, sy - Rd * .3, Rd * .6, Rd * .6);
     x.restore();
+    if (g.pat && g.pat.clear) { x.save(); x.globalCompositeOperation = 'destination-out'; ringPath(x, PX, PY, n); x.fillStyle = `rgba(0,0,0,${g.pat.clear.toFixed(3)})`; x.fill(); x.restore();   // variety: see-through skin (the first game's clear bodies)
+      const sx2 = H + dx * Rd * .35, sy2 = H + dy * Rd * .35, hg = x.createRadialGradient(sx2, sy2, 0, sx2, sy2, Rd * .45); hg.addColorStop(0, 'rgba(255,252,245,.3)'); hg.addColorStop(1, 'rgba(255,252,245,0)'); x.fillStyle = hg; x.fillRect(sx2 - Rd * .45, sy2 - Rd * .45, Rd * .9, Rd * .9); }
     if (bf) { x.save(); x.translate(H - bf.FH, H - Rd * .25 * Math.sqrt(g.aspect || 1) - bf.FH); facePaint(o, Rd, bf.FH, C, bf.ne, bf.er, bf.irisK, OPENS[bf.oq], 0)(x, bf.FH * 2); x.restore(); } };   // far tier: the face baked in (resting lids, gaze ahead)
   // ---- the face sprite (device px, square 2*FH, centred on the eye line centre): sockets, eyeballs, irises, catchlights, lids (A)
   const facePaint = (o, Rd, FH, C, ne, er, irisK, open, gz) => (x, w) => { const sp = Math.max(er * 2.25, Rd * .38), [dx, dy] = lightDir();
@@ -163,7 +167,7 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     const ne = (G.eyes | 0) + 1, er = Rd * (.1 + .075 * cl(((G.social || .6) - .3) / .7)), irisK = .48 + .3 * cl(((G.hear || .7) - .4) / .6), FH = Math.ceil(Math.max(er * 2.25, Rd * .38) * (ne - 1) / 2 + er * 1.9) + 1;
     const bf = full || lod >= 3 ? null : { FH, ne, er, irisK, oq: openQ(1 - .3 * (G.calm || .5)) }, bs = !full && O.shadow && grounded0;
     const live = !!(legs && full && BODY_PLAN.walk && (lod < 2 || (BODY_PLAN.low && o === (sim && sim.ohm)))), legsB = legs && !live;   // O2 walking legs: near (full-tier) ohms draw their legs live, so the sprite is baked without them
-    const shp = G._rare ? `r${G._rare}` : '', bk = `ohc:${o.id}${shp}${G.plan ? 'p' : ''}:${Rd}:${hb}${db}${s.tuK ? 't' + s.tuK : ''}${ab}:${lk}:${legsB ? 1 : 0}${bf ? 'f' + bf.oq : ''}${bs ? 's' : ''}`;
+    const shp = G._rare ? `r${G._rare}` : '', bk = `ohc:${o.id}${shp}${G.plan ? 'p' : ''}${G.pat ? 'v' : ''}:${Rd}:${hb}${db}${s.tuK ? 't' + s.tuK : ''}${ab}:${lk}:${legsB ? 1 : 0}${bf ? 'f' + bf.oq : ''}${bs ? 's' : ''}`;
     let C = s.C; if (!C || s.ck !== hb * 7 + (s.trad.i | 0) * 31 + ((o.hue || 0) | 0) * 1009) { C = s.C = colsOf(o, s, hb, db); s.ck = hb * 7 + (s.trad.i | 0) * 31 + ((o.hue || 0) | 0) * 1009; }
     // ZOOM-SAFE (parent 11:52 PM: never a half bake, never a pop, never a rebake per zoom step): the last COMPLETE body sprite stays on
     // screen, scaled, until the new one is done; a new exact bake is queued only once the device radius has held for O.settleN frames.

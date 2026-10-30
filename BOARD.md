@@ -33,6 +33,8 @@ says **which category each item is in**.
 | O2 | Ohms | Walking legs: near ohms step with their legs as they move; far ohms keep standing legs | approved 10:12 PM Oct 29 "Do all"; gait speed and stride: (builder's call) | walkLegs | #5 (merged) |
 | F3 | Music | Real chromatic chords: blues V7 (G B D F), flamenco III (the true Andalusian iv-III-II-I), samba VI7 (A C# E G). Still stand-ins: samba iv, the jazz bridge | approved 10:12 PM Oct 29 "Do all"; which chords and charts: (builder's call) | traditions: chromatic chords | #6 (merged) |
 
+| O4 | Ohms | First game's variety: every ohm born with its own skin pattern (spots, stripes, rings, patches or plain), a second colour, see-through skin or an inner glow for some, and stronger shape differences; muted colours | Wilbow 10:52 PM Oct 29 'never having nearly as much diversity', 11:08 PM 'All ok'; pattern mix and strengths: (builder's call) | ohmVariety | #11 (open: look at the screenshots, then merge or change) |
+
 ## 2b. KEPT (approved after building; Wilbow 10:12 PM Oct 29 "Do all")
 
 | ID | Area | What | Switch | PR |
