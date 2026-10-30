@@ -12,7 +12,7 @@ For Grok (or any AI) picking up work. Written Oct 29 2026 by Claude, at Wilbow's
 ## 0b. Signing and versions (Oct 29)
 - Every **debug** build is signed with one shared **test key** in the repo (`android/keystores/journeyohm-test.keystore`, standard `android` passwords): builds install over each other on the phone. It is not a release key.
 - `versionCode` = 1000 + the GitHub run number (versionName `0.0.30-bN`), so every build is newer than the last, and newer than your v0.0.30 (versionCode 30).
-- The latest APK always sits at the fixed link `releases/download/latest-build/JourneyOhm-latest-debug.apk` (plus `JourneyOhm-latest.apk`, release-signed, once the secrets exist).
+- The newest APK is the only file on the release page `releases/tag/latest-build`, named `JourneyOhm-b<N>-<date>.apk` (N = GitHub run number; `-release.apk` too once the secrets exist). The game's dev button shows `dev · b<N>` (from www/build.json, written by CI). Builds 16+ use the shared test key.
 
 ## 1. Read BOARD.md first, and follow its rules
 
