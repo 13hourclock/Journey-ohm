@@ -50,14 +50,14 @@ export function createConduct({ sim, bus, music, size, toScreen, opts = {} }) {
   const d0 = sim.dictated; sim.dictated = (o, bar) => (O.on && C.silent(o, bar) ? [] : d0 ? d0(o, bar) : null);
   const a0 = sim.autoFor; sim.autoFor = (o, beat) => { const A = a0 ? a0(o, beat) : null; if (!O.on || !C.set.has(o) || Math.abs(C.vol - 1) < .01) return A; return { vol: (A ? A.vol : 1) * C.vol, cutK: A ? A.cutK : 1 }; };
   C.tick = dt => { C.vol += (C.volT - C.vol) * Math.min(1, (dt || .02) * 4); if (!C.up && Math.abs(C.vol - 1) < .01) C.vol = 1; if (C.up && performance.now() - C.last > O.idleS * 1000) C.release('idle'); };
-  C.owns = () => O.on && O.gesture;   // input.js: with the gesture on, the two-finger still hold raises the baton instead of ground shaping
+  C.armed = false; C.owns = () => O.on && O.gesture && (!O.near || C.armed);   // Oct 28 (#413 A): with O.near set, only a two-finger hold near a jam conducts; elsewhere it shapes the ground   // input.js: with the gesture on, the two-finger still hold raises the baton instead of ground shaping
   // the touch binding (OFF by default: clash above). Window capture, watches only the play canvas; never consumes events.
   C.attach = el => { if (!el || typeof window === 'undefined') return; const P = new Map(); let holdT = 0, baton = null, third = null;
     const free = (x, y) => { const { W, H } = size(); for (const o of sim.ohms || []) { if (!o.body) continue; const s = toScreen(W, H, sim.cam, o.body.x, o.body.y), r = Math.max(36, ((o.g && o.g.r) || .5) * s.s * 1.15); if (Math.hypot(x - s.x, y - s.y) < r) return false; } return true; };
     const toW = (x, y) => { const { W, H } = size(), s = toScreen(W, H, sim.cam, 0, 0), s1 = toScreen(W, H, sim.cam, 1, 0), k = Math.max(1e-6, s1.x - s.x); return { x: (x - s.x) / k, y: (y - s.y) / k }; };
     window.addEventListener('pointerdown', e => { if (e.target !== el || !O.on || !O.gesture) return; P.set(e.pointerId, { x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY });
       if (C.up && baton && !baton.includes(e.pointerId) && third == null) { third = e.pointerId; C.down(e.clientX, e.clientY, e.timeStamp); return; }
-      clearTimeout(holdT); if (P.size === 2) { const ids = [...P.keys()], ps = ids.map(i => P.get(i)); if (!ps.every(p => free(p.x0, p.y0))) return;
+      clearTimeout(holdT); if (P.size === 2) { const ids = [...P.keys()], ps = ids.map(i => P.get(i)); if (!ps.every(p => free(p.x0, p.y0))) return; C.armed = !O.near || !!O.near((ps[0].x0 + ps[1].x0) / 2, (ps[0].y0 + ps[1].y0) / 2); if (!C.armed) return;
         holdT = setTimeout(() => { if (P.size !== 2 || !ids.every(i => P.has(i))) return; if (ids.some(i => { const p = P.get(i); return Math.hypot(p.x - p.x0, p.y - p.y0) > O.stillPx; })) return;
           const m = toW((ps[0].x + ps[1].x) / 2, (ps[0].y + ps[1].y) / 2); if (C.raise(m.x, m.y)) baton = ids; }, O.holdMs); } }, { capture: true });
     window.addEventListener('pointermove', e => { const p = P.get(e.pointerId); if (!p) return; p.x = e.clientX; p.y = e.clientY; if (e.pointerId === third) C.move(e.clientX, e.clientY, e.timeStamp); }, { capture: true });
