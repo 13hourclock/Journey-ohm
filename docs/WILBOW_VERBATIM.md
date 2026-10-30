@@ -1829,3 +1829,24 @@ In order"  [CANCELS the ~3:16 PM voice-call entries above on Q350, Q351/352 and 
 - Oct 29 2026, 9:57 PM MDT (Claude chat): "Deviding development into categories to maximize efficiency and make sure there no confusion generated from discussion and idea making is necessary. My main problem has been development happening based on misunderstandings"
 - Oct 29 2026, 10:02 PM MDT (Claude chat): "Can we make the build private now?" (repo visibility: Claude could not change it; left with Wilbow)
 - Oct 29 2026, 10:12 PM MDT (Claude chat): "Do all, keep discussion going" (to the approval list: keep M1, M2, F2, O1, M3x; build O2 walking legs and F3 chromatic chords; merge PRs #1-#4; write a Grok note; K1, M4, M5 stay discussion)
+- Oct 29 2026, 10:51 PM MDT (Claude chat): "Theres alot of audio static sounding terrible. and graphical issues. I dont see any limbs or other discussed things"
+- Oct 29 2026, 10:52 PM MDT (Claude chat): "I saw it change to basic spheres on top of never having nearly as much diversity as the last game"
+- Oct 29 2026, 10:53 PM MDT (Claude chat): "Yes" (to: find the overload causing static; make body shapes survive low detail)
+- Oct 29 2026, 10:54 PM MDT (Claude chat): "It seemed to work fine in the first game, what's the difference"
+- Oct 29 2026, 11:08 PM MDT (Claude chat): "All ok" (to: start the audio budget fix; the first game's variety, screenshots before merging)
+- Oct 29 2026, 11:32 PM MDT (Claude chat): "Always give the summary and options to approve in a digestible format"
+- Oct 29 2026, 11:33 PM MDT (Claude chat): "The repo is now private, also include the current apk and a way to access it" (GitHub still reported Journey-ohm public)
+- Oct 29 2026, 11:34 PM MDT (Claude chat): "I meant include the current apk and a way to access it in the summary after building."
+- Oct 29 2026, 11:37 PM MDT (Claude chat): "I Uninstaller the version that came from grok, why cant I update the current apk on my phone, instead of manually needing to un/ reinstall"
+- Oct 29 2026, 11:39 PM MDT (Claude chat): "Do whatever works best, but remember to keep ready to get grokbot informed and as an asset, once my usage is available"
+- Oct 29 2026, 11:43 PM MDT (Claude chat): "I would consider everything currently visible in the game a place holder for a system that needs work. Most of those systems need entertaining into other systems. For example visual feedback back on audio. I think alot of this work needs done in passes of some sort. Do you understand, and how can we explore before implementation"
+- Oct 29 2026, 11:45 PM MDT (Claude chat): "Yes and keep the other ideas in discussion for a while" (yes = build the system map)
+- Oct 29 2026, 11:47 PM MDT (Claude chat): "Whats the hangup with merges vs changes? Highlighight items in summaries that are unaddressed and push forward items for approval that aren't being addressed"
+- Oct 29 2026, 11:50 PM MDT (Claude chat): "Where is it downloading to? The download screen doesnt allow opening"
+- Oct 29 2026, 11:57 PM MDT (Claude chat): "Make sure theres no confusion between file versions"
+- Oct 30 2026, 12:02 AM MDT (Claude chat, with a screenshot: 92% of usage limit): "What is not a false alarm is this. Usage limits seem to burn up too quickly, and we aren't getting much done. Just undying more knots that we just tied"
+- Oct 30 2026, 12:05 AM MDT (Claude chat): "Always remind me of things that decrease efficiency, especially if the have simple fixes. Feedback loops and low cost checks and other routines"
+- Oct 30 2026, 12:05 AM MDT (Claude chat): "Where should these chats start?"
+- Oct 30 2026, 12:07 AM MDT (Claude chat): "Always remind me and make sure other instances and ais use a protocol that preserves tokens through metrics that dont reduce the game development"
+- Oct 30 2026, 12:08 AM MDT (Claude chat): "How to make sure details aren't lost in thos handoff?"
+- Oct 30 2026, 12:09 AM MDT (Claude chat): "Wrap up after ensuring that auto wrap up is ensured in case I forget"

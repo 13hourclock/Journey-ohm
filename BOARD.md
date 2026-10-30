@@ -83,4 +83,5 @@ says **which category each item is in**.
 | ID | What | Status |
 |---|---|---|
 | T2 | Release signing with the lensure key (builds also update over Grok's old installs; needed for the Play Store) | for Grok when usage is back: see GROK_HANDOFF.md section 0 |
+| H2 | Auto wrap-up: every pull request carries its board update, Wilbow's words and a session-log line; GitHub board check flags game changes without a board update | done, PR #17 |
 | H1 | Make the GitHub repo private | Wilbow to do it (Claude cannot change repo settings): Settings -> Danger Zone -> Change visibility. Grok loses access to a private repo unless added. |

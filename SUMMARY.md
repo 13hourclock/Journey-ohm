@@ -18,6 +18,8 @@ Approved by Wilbow 10:12 PM MDT Oct 29 ("Do all, keep discussion going"). Merged
 - **Walking legs** (PR #5, switch walkLegs): near ohms step with their legs as they move.
 - **Music reference docs** copied from the first game into docs/: TRADITION_REFERENCE, MUSIC_OVERHAUL, MUSIC_THEORY, PATTERN_LIBRARY, V08_B7_VOICE_THEORY.
 
+- **Later the same night** (PRs #9-#16): ohms keep their real shapes, legs and features when the phone is busy (switch lowShapes); less audio static (note bursts spread over a few ms, fewer voices when busy, switch audioBudget); every build installs as an update (shared test key, versionCode 1000 + build); one build-numbered APK per build on releases/tag/latest-build, build number on the dev button; system map (docs/SYSTEM_MAP.html); EFFICIENCY.md token-saving protocol with automatic wrap-up. Waiting: ohm variety (PR #11).
+
 ### Still discussion (not built): see BOARD.md K1 (how the player changes the key), M4 (several song groups at once), M5 (what happens when traditions meet).
 
 ---
