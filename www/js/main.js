@@ -45,6 +45,7 @@ import { createClock } from './clock.js';
 import { createPersist } from './persist.js';
 import { createSystems } from './systems.js';
 import { createTraditions } from './traditions.js';
+import { BODY_PLAN } from './bodyplan.js';
 import { createShapePlay } from './shapeplay.js';
 import { createBystand } from './bystand.js';
 import { createAbilities, ABILITIES } from './abilities.js';
@@ -104,6 +105,7 @@ world.attachPanel(panel && panel.root || document.getElementById('dev'));
 const systems = createSystems({ sim, bus, music, harmony, autojam, world, sing, render, canvas, panel, persist, brain });   // SYSTEMS track: songs, river DAW, save, spawn, undo, helper, mouth, walk, fusions, plants, harmony bank
 systems.attachPanel(panel && panel.root || document.getElementById('dev'));
 const traditions = createTraditions({ sim, bus, music, harmony, world });   // TRADITIONS wave 1: one per planet (seed + land lean); tuning, tempo, feel, cycle, lean, drone, song shape; aura data hooks only
+systems.switches.push({ k: 'bodyPlans', label: 'body plans (first game): blob / shell / serpent / strider / drum-belly / cluster / floater from the instrument, gene outlines, legs, tails, spikes, fronds, feelers, keels, bands, plates, bubbles, serpent segments (off = the v0.0.30 round / long / lobed bodies)', get: () => BODY_PLAN.on, set: v => { BODY_PLAN.on = !!v; for (const o of sim.ohms) if (o.scale === 'ohm' && o.g && sim.regrow) { const f = o.g.float; sim.regrow(o); o.g.float = f; } } });
 traditions.attachPanel(panel && panel.root || document.getElementById('dev'));
 const things = createThings({ sim, bus, music, persist, undo: systems.undo, size: () => render.size(), canvas, render });   // step 5 E + F: effect objects + drawn instruments (after the systems shapes)
 things.fuse = systems.fuse;   // Q351: fused groups grow strings (things.js groupTick)

@@ -3,6 +3,7 @@
 // (membrane = round drum belly, string = long, bar = lobed / angular), damping sets how wobbly it is. The rest comes from a
 // second stream of the same seed, so every ohm is unique and the same seed always grows the same ohm. Pure, no state.
 import { rng } from './rng.js';
+import { applyPlan, shapeK } from './bodyplan.js';   // body plans (old game): outline, legs, appendages; switch BODY_PLAN.on
 export const RING = 10;   // soft-body ring points per ohm (cheap: 10 springs; same block at every scale)
 export function bodyGenes(seed, rec) {
   const r = rng((seed ^ 0x5bd1e995) >>> 0), p = rec.modal.p, f = rec.modal.fam;
@@ -21,8 +22,8 @@ export function bodyGenes(seed, rec) {
     eyes: 1 + (r() < .3 ? 1 : 0), legs: f.membrane > .45 ? 0 : (r() < .5 ? 2 : 0),   // appendages (drawn only)
   };
   g.k = 170 - g.soft * 110; g.c = 6 - g.soft * 3.2;       // ring spring + damping
-  return g;
+  return applyPlan(g, seed, rec);
 }
 // rest shape of ring point i (offset from centre, world units)
-export function restPoint(g, i, out) { const a = i / RING * 6.283, rr = g.r * (1 + g.lobeAmt * Math.cos(g.lobes * a + g.lobePh));
+export function restPoint(g, i, out) { const a = i / RING * 6.283, rr = g.r * shapeK(g, a);   // shapeK = the old lobes term when there is no plan
   out[0] = Math.cos(a) * rr / Math.sqrt(g.aspect); out[1] = Math.sin(a) * rr * Math.sqrt(g.aspect); return out; }
