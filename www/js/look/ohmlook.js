@@ -13,7 +13,7 @@
 // rest ring (squish / stretch / pinch follow) x the posture. No shadowBlur / filter / gradient per frame. opts.realLook.ohmChar = false = off.
 import { hsl2rgb } from './palette.js';
 import { TRADITIONS } from './aura.js';
-import { shapeK, extentK, appRoom, paintBehind, paintOnSkin, stepSegments, paintSegment } from '../bodyplan.js';   // body plans (old game), switch BODY_PLAN.on
+import { shapeK, extentK, appRoom, paintBehind, paintOnSkin, stepSegments, paintSegment, drawWalkLegs, BODY_PLAN } from '../bodyplan.js';   // body plans (old game), switch BODY_PLAN.on
 // tune (playtwice 'ohm.tune': a phrase played twice is the ohm's tune): a short warm glow wells up INSIDE the ohm (kept within its
 // smallest radius, so never past its skin), shrinks and settles, and as it settles the skin marks (B) deepen a little (tuneDeep per tune taught, o.tune.n, up to 2;
 // undo takes o.tune back and the marks with it). One baked 64 px sprite, one drawImage per flashing ohm; nothing when no flash is live.
@@ -162,7 +162,8 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     const ni = NI++, fn = O.fullN[Math.min(3, QL)] | 0; s.full = s.full ? ni < fn * 1.35 + 1 : ni < fn; const full = s.full || !O.face, grounded0 = !!b.ground || !G.float;
     const ne = (G.eyes | 0) + 1, er = Rd * (.1 + .075 * cl(((G.social || .6) - .3) / .7)), irisK = .48 + .3 * cl(((G.hear || .7) - .4) / .6), FH = Math.ceil(Math.max(er * 2.25, Rd * .38) * (ne - 1) / 2 + er * 1.9) + 1;
     const bf = full || lod >= 3 ? null : { FH, ne, er, irisK, oq: openQ(1 - .3 * (G.calm || .5)) }, bs = !full && O.shadow && grounded0;
-    const shp = G._rare ? `r${G._rare}` : '', bk = `ohc:${o.id}${shp}${G.plan ? 'p' : ''}:${Rd}:${hb}${db}${s.tuK ? 't' + s.tuK : ''}${ab}:${lk}:${legs ? 1 : 0}${bf ? 'f' + bf.oq : ''}${bs ? 's' : ''}`;
+    const live = !!(legs && full && BODY_PLAN.walk && lod < 2), legsB = legs && !live;   // O2 walking legs: near (full-tier) ohms draw their legs live, so the sprite is baked without them
+    const shp = G._rare ? `r${G._rare}` : '', bk = `ohc:${o.id}${shp}${G.plan ? 'p' : ''}:${Rd}:${hb}${db}${s.tuK ? 't' + s.tuK : ''}${ab}:${lk}:${legsB ? 1 : 0}${bf ? 'f' + bf.oq : ''}${bs ? 's' : ''}`;
     let C = s.C; if (!C || s.ck !== hb * 7 + (s.trad.i | 0) * 31 + ((o.hue || 0) | 0) * 1009) { C = s.C = colsOf(o, s, hb, db); s.ck = hb * 7 + (s.trad.i | 0) * 31 + ((o.hue || 0) | 0) * 1009; }
     // ZOOM-SAFE (parent 11:52 PM: never a half bake, never a pop, never a rebake per zoom step): the last COMPLETE body sprite stays on
     // screen, scaled, until the new one is done; a new exact bake is queued only once the device radius has held for O.settleN frames.
@@ -170,8 +171,8 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     if (s.rdL === Rd) s.rdN++; else { s.rdL = Rd; s.rdN = 0; } const settled = s.rdN >= (moving ? O.gestSettleN : O.settleN);
     let img = sprites.map.has(bk) ? sprites.get(bk, H * 2, H * 2, null) : null, iRd = Rd, iH = H;
     if (img) s.last = { img, Rd, H, bf: !!bf, bs }; else {
-      if (s.last) { if (settled) ready(bk, H * 2, bodyPaint(o, Rd, H, C, kind, depth, legs, bf, bs)); img = s.last.img; iRd = s.last.Rd; iH = s.last.H; K.stats.stale++; }
-      else { img = sprites.get(bk, H * 2, H * 2, bodyPaint(o, Rd, H, C, kind, depth, legs, bf, bs)); if (!img) { K.stats.miss++; return false; } s.last = { img, Rd, H, bf: !!bf, bs }; } }
+      if (s.last) { if (settled) ready(bk, H * 2, bodyPaint(o, Rd, H, C, kind, depth, legsB, bf, bs)); img = s.last.img; iRd = s.last.Rd; iH = s.last.H; K.stats.stale++; }
+      else { img = sprites.get(bk, H * 2, H * 2, bodyPaint(o, Rd, H, C, kind, depth, legsB, bf, bs)); if (!img) { K.stats.miss++; return false; } s.last = { img, Rd, H, bf: !!bf, bs }; } }
     const hasF = s.last.bf, hasS = s.last.bs;   // what the sprite on screen actually carries (the last complete bake may be the other tier)
     // live breath (as ohmdraw) -> k = CSS px per world unit of the live ring
     const brf = sim && sim.breath ? sim.breath(o) : 1, br = brf * (1 - .22 * (b.pin || 0) + .25 * (b.pout || 0) + .12 * Math.min(1, b.throb || 0)) * (1 + gl * .04), k = r / G.r * br;
@@ -200,6 +201,8 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
       if (grounded) { const sy = y + ay + (legs ? G.r * k * .26 : 0); g.globalAlpha = O.shadowA * a0; g.drawImage(sh, x + ax - rx * 1.25, sy - rx * .28, rx * 2.5, rx * .56); K.stats.shadows++; }
       else { const gy = sim && sim.groundAt ? sim.groundAt(b.x) : sim && sim.bounds ? sim.bounds.ground : null; if (gy != null && isFinite(gy)) { const u = r / G.r, h = (gy - b.y) * u - ymx * k; if (h > 0 && h < r * 14) { const f = 1 / (1 + h / (r * 3)), sy = y + (gy - b.y) * u;
         g.globalAlpha = O.floatShadowA * f * a0; g.drawImage(sh, x + ax - rx * 1.2 * f, sy - rx * .24 * f, rx * 2.4 * f, rx * .48 * f); K.stats.shadows++; } } } } }
+    // 2a walking legs (O2): live, behind the body, stepping while it moves; the belly depth from the live ring
+    if (live) { let ym = 0; for (let i = 0; i < 10; i++) ym = Math.max(ym, R[i * 4 + 1] - mpy); g.globalAlpha = a0; drawWalkLegs(g, G, s, b, x + mpx * k, y + mpy * k, G.r * k, ym * k, C, rgba, dt || 1 / 60); K.stats.walkLegs = (K.stats.walkLegs | 0) + 1; }
     // 2b serpent segments (body plans): a rope behind the head, each a shaded segment sprite, tail first; near ohms only
     if (G.plan && G.plan.segments > 1 && lod < 2) { const seg = stepSegments(s, G, b, dt || 1 / 60); if (seg) { const [ldx, ldy] = lightDir(), SR = Math.max(8, Math.round(Rd * .8)), sk = `ohs:${o.id}:${SR}:${hb}:${ab}`;
       const simg = sprites.map.has(sk) ? sprites.get(sk, SR * 2, SR * 2, null) : ready(sk, SR * 2, paintSegment(C, rgba, ldx, ldy)) || (s.segImg && s.segImg.img); if (simg) { s.segImg = { img: simg }; const u = r / G.r * br;
