@@ -18,7 +18,7 @@ import { recipes, octaveOf } from './recipe.js';
 import { rng } from './rng.js';
 import { SOURCES } from './matrix.js';
 import { noLine, softPool, softDot } from './soft.js';   // v0.0.30 B7: no outlines
-export const SONG_OPTS = { on: true, catchN: 3, minBars: 8, slowBars: 24, maxGroup: 4, settle: 2, meet: true, carry: .45, rest: [4, 12], tradPlays: 3, reach: 4,
+export const SONG_OPTS = { strongSnap: true, on: true, catchN: 3, minBars: 8, slowBars: 24, maxGroup: 4, settle: 2, meet: true, carry: .45, rest: [4, 12], tradPlays: 3, reach: 4,
   sectionBang: .25,
   momentK: .3, cadenceN: 3,
   breakdown: true, bdChance: .25, bdLen: [2, 4], bdMin: 3,
@@ -162,13 +162,19 @@ export function createSongs(sim, bus, music, harmony, autojam, opts = {}) {
   const gene = (o, salt) => u01(o.seed || o.id, salt);
   const partsFor = (G, bi, L) => { const s = G.song, bars = L[bi], out = new Map(), ms0 = G.members.slice().sort((a, b) => gene(b, 3) - gene(a, 3)), ms = sim.jamRoles ? sim.jamRoles.songOrder(G, ms0) : ms0,   /* jam roles: whoever is out front now carries the melody */ hr = s.sec[s.form[0]][0], hb = s.hookBars || 1;
     const isHook = bars.sec !== 'end' && (bars.sec === s.form[0] || bars.sec === 'A') && bars.i < hb, last = bi === L.length - 1, r = bars.r, tones = [r, r + 2, r + 4];
+    // STRONG-BEAT CHORD TONES (TRADITION_REFERENCE 0.5 lead: chord tones on strong beats; switch O.strongSnap, ON): the melody's notes on beats 1 and 3, and its held notes on
+    // beats 2 and 4, move at most 2 scale steps to the nearest tone of THIS bar's chord (the hook was written over the first chord; replayed over the next one it clashed).
+    // Weak-beat notes, rhythm and contour stay; drone traditions (no chords) are left alone. Off = as before.
+    const ctM = (music.tonesOf ? music.tonesOf(r) : tones).map(t => ((t % 7) + 7) % 7), droneT = music.trad && music.trad.harm === 'drone';
+    const snap = n => { if (!O.strongSnap || droneT) return n; const bt = Math.round(n.b); if (Math.abs(n.b - bt) > .01 || !(bt % 2 === 0 || (n.len || 0) >= 1)) return n;
+      if (ctM.includes(((n.d % 7) + 7) % 7)) return n; for (const k of [-1, 1, -2, 2]) if (ctM.includes((((n.d + k) % 7) + 7) % 7)) return { ...n, d: n.d + k }; return n; };
     const low = G.members.slice().sort((a, b) => octaveOf(recipes.get(a.recipe)) - octaveOf(recipes.get(b.recipe)) || a.seed - b.seed)[0];
     for (const m of G.members) { const ns = [], d = gene(m, 3), mine = bars.grown ? (G.gparts && G.gparts[m.seed] && G.gparts[m.seed][bars.sec]) : (s.parts && s.parts[m.seed] && s.parts[m.seed][bars.sec]);   // grown sections (jamgrow.js) never read / write the library song
       if (mine) { for (const n of mine) if (n.b >= bars.i * 4 && n.b < bars.i * 4 + 4) ns.push({ ...n, b: n.b - bars.i * 4, own: 1 }); out.set(m, ns); continue; }   // edited in the river
       if (last) { ns.push(N(tones[ms.indexOf(m) % 3] + (m === low ? -7 : 0), 0, 3.5, .8)); out.set(m, ns); continue; }   // the ending: everyone lands on the home chord
       const melo = isHook ? ms[0] : ms[bi % Math.min(2, ms.length)];
       if (m === melo) { const src = isHook ? s.hook.filter(n => n.b >= bars.i * 4 && n.b < bars.i * 4 + 4).map(n => ({ ...n, b: n.b - bars.i * 4 })) : s.hook.filter(n => n.b < 4).map(n => ({ ...n, d: n.d + (r - hr) }));
-        const drift = driftOf(m, s); src.forEach((n, i) => { const wrong = u01(m.seed, i, bi, hsh(s.id.length, s.id.charCodeAt(2) || 0)) < drift * .6; ns.push({ ...n, d: n.d + (wrong ? (u01(m.seed, i, 7) < .5 ? 1 : -1) : 0), wrong: wrong ? 1 : 0, hook: isHook ? 1 : 0 }); }); }
+        const drift = driftOf(m, s); src.forEach((n0, i) => { const n = snap(n0); const wrong = u01(m.seed, i, bi, hsh(s.id.length, s.id.charCodeAt(2) || 0)) < drift * .6; ns.push({ ...n, d: n.d + (wrong ? (u01(m.seed, i, 7) < .5 ? 1 : -1) : 0), wrong: wrong ? 1 : 0, hook: isHook ? 1 : 0 }); }); }
       else if (m === low) { ns.push(N(r - 7, 0, 1.8, .55)); if (d > .45) ns.push(N(r - 7 + (d > .75 ? 4 : 0), 2, 1.5, .45)); }
       else { const n = 1 + Math.round(d * 3), lp = sim.blend && sim.blend.pattern ? sim.blend.pattern(m) : null; for (let j = 0; j < n; j++) ns.push(N(tones[(j + (bi & 1)) % 3], lp && lp.rh ? Math.min(3.75, lp.rh[j % lp.rh.length]) : j * 4 / n, .8, .45)); }
       out.set(m, ns); }
