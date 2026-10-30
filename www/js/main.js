@@ -58,6 +58,7 @@ import { createTrippy } from './trippy.js';
 import { createJamRoles } from './jamroles.js';
 import { createJamKeys } from './jamkeys.js';
 import { createJamGrow } from './jamgrow.js';
+import { createTrees } from './trees.js';
 import { createLearnVoice } from './learnvoice.js';
 import { createConduct } from './conduct.js';
 import { createCraze } from './craze.js';
@@ -190,6 +191,8 @@ const sTmp = { x: 0, y: 0, s: 1 };
 const jamGrow = createJamGrow({ sim, bus, music, autojam, rare, songs: () => systems.songs, view: () => { const { W, H } = render.size(); return { W, H, toS: (x, y) => toScreen(W, H, sim.cam, x, y, sTmp) }; } }); sim.jamGrow = jamGrow; systems.jamGrow = jamGrow;
 systems.switches.push({ k: 'jamGrow', label: 'jams you watch grow: a jam kept in view, all in time and in key, grows its loop 2 -> 4 -> 8 -> 16 bars keeping the old one; a new part that slips is dropped', get: () => jamGrow.opts.on, set: v => { jamGrow.opts.on = !!v; }, info: () => `${jamGrow.grown} grown, ${jamGrow.reverts} dropped, ${jamGrow.explores} small tries (${jamGrow.kept} kept); longest ${Math.max(0, ...[...jamGrow.j.values()].map(s => s.loop ? s.loop.length : 0))} bars` });
 systems.switches.push({ k: 'jamGrowSongs', label: 'song groups you watch grow too (old game): a matched group kept in view comes back with a longer form (A A\' ..., a development section) keeping the proven one; a grown play that slips is dropped', get: () => jamGrow.opts.songs, set: v => { jamGrow.opts.songs = !!v; }, info: () => `${jamGrow.songGrown} grown, ${jamGrow.songKept} kept, ${jamGrow.songDrops} dropped` });
+const trees = createTrees({ sim, bus, world, quality }); systems.trees = trees; persist.register('trees', { prio: 6, save: () => trees.save(), load: d => trees.load(d) });   // BOARD W2/W3 jam trees (trees.js)
+systems.switches.push({ k: 'jamTrees', label: 'jam trees: a jam that holds together grows a tree where it played, shaped by its song (harmony splits the branches, rhythm sets their lengths); every grown jam adds a ring (taller, thicker, its colours); top-level jams bloom; zoom in to see the rings (off = no trees)', get: () => trees.opts.on, set: v => { trees.opts.on = !!v; }, info: () => `${trees.list.length} trees, ${trees.ringsAdded} rings, ${trees.blooms} blooms` });
 const skyMood = createSkyMood({ bus, music, env: () => world.env }); systems.skyMood = skyMood;   // v0.0.29 TASTE: the sky leans the music (OFF)
 systems.switches.push({ k: 'skyMood', label: 'TASTE: the sky leans the music: at night the ohms play softer and lower, in rain sparser (gentle preset; your own notes untouched) (off)', get: () => skyMood.opts.on, set: v => { skyMood.opts.on = !!v; }, info: () => `night ${skyMood.night.toFixed(2)} rain ${skyMood.rain.toFixed(2)}, ${skyMood.softened} softer, ${skyMood.lowered} lower, ${skyMood.thinned} rested` });
 const playTwice = createPlayTwice({ sim, bus, music, brain, undo: systems.undo }); systems.playTwice = playTwice;   // v0.0.29 old game: play a phrase twice on an ohm and it takes it as its tune
@@ -239,7 +242,7 @@ if (snap && !snap.parts.trippy) trippy.fromOld();   // an old save: count the sc
 const ctl = { ms: 0, hz: 0, n: 0, src: '' };
 let lastT = performance.now();
 const tick = src => { const t = performance.now(), dt = (t - lastT) / 1000; if (dt < .012) return; lastT = t; ctl.src = src; ctl.n++;
-  const a0 = performance.now(); sim.step(Math.min(.05, dt)); world.tick(Math.min(.05, dt)); trippy.tick(Math.min(.05, dt)); music.tickGlide(); bus.flush(); pulse.tick(); haptics.tick(); sing.tick(); harmony.tick(); if (lookFeed) lookFeed.tick(); blend.tick(); jam.tick(); autojam.tick(); systems.tick(Math.min(.05, dt)); traditions.tick(); things.tick(); shapeplay.tick(); bystand.tick(); jamRoles.tick(); jamKeys.tick(); jamGrow.tick(Math.min(.05, dt)); craze.tick(); conduct.tick(Math.min(.05, dt)); abilities.tick(); gasfloat.tick(); senses.tick(); herd.tick(); rare.tick(); influence.tick(); audioSig.tick(); matrix.tick(); sound.gc(); ctl.ms = ctl.ms * .95 + (performance.now() - a0) * .05; };
+  const a0 = performance.now(); sim.step(Math.min(.05, dt)); world.tick(Math.min(.05, dt)); trippy.tick(Math.min(.05, dt)); music.tickGlide(); bus.flush(); pulse.tick(); haptics.tick(); sing.tick(); harmony.tick(); if (lookFeed) lookFeed.tick(); blend.tick(); jam.tick(); autojam.tick(); systems.tick(Math.min(.05, dt)); traditions.tick(); things.tick(); shapeplay.tick(); bystand.tick(); jamRoles.tick(); jamKeys.tick(); jamGrow.tick(Math.min(.05, dt)); trees.tick(Math.min(.05, dt)); craze.tick(); conduct.tick(Math.min(.05, dt)); abilities.tick(); gasfloat.tick(); senses.tick(); herd.tick(); rare.tick(); influence.tick(); audioSig.tick(); matrix.tick(); sound.gc(); ctl.ms = ctl.ms * .95 + (performance.now() - a0) * .05; };
 const onLv = sound.onLevels; audio.onLevels = (lv, ct) => { onLv(lv, ct); tick('audio'); };
 setInterval(() => { if (performance.now() - lastT > 30) tick('timer'); }, 25);
 setInterval(() => { ctl.hz = ctl.n; ctl.n = 0; }, 1000);
@@ -254,4 +257,4 @@ bus.land = sim.opts.land;   // when a tap change lands in a jam (Wilbow 6A+6D, p
 const q = new URLSearchParams(location.search);
 if (q.has('nojam')) sim.opts.jam.on = false;   // test hook: compare timings without the partner
 if (q.has('autostart') || q.has('selftest')) startAudio(false).then(() => { if (q.has('selftest')) { selftest.res = null; setTimeout(() => selftest.start(+q.get('selftest') || 60), 300); } });
-globalThis.JO = { guests, things, drums, audio, music, sim, events: bus, matrix, sound, pulse, frames, selftest, ctl, panel, jam, sing, harmony, blend, brain, influence, autojam, world, render, zoom, quality, systems, persist, clock, rare, traditions, trippy, jamRoles, jamKeys, jamGrow, learnVoice, conduct, craze, audioSig };
+globalThis.JO = { guests, things, drums, audio, music, sim, events: bus, matrix, sound, pulse, frames, selftest, ctl, panel, jam, sing, harmony, blend, brain, influence, autojam, world, render, zoom, quality, systems, persist, clock, rare, traditions, trippy, jamRoles, jamKeys, jamGrow, trees, learnVoice, conduct, craze, audioSig };
