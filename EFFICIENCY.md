@@ -22,6 +22,14 @@ Every AI session gets an ID: **`JO-<YYYYMMDD>-<NN>-<who>-<item>`** (date it star
 4. Performance comparisons: at most one paired before/after run on a fixed seed. Headless audio numbers are noisy; the phone is the real check.
 5. The phone test by Wilbow is the final check: say exactly what to try.
 
+## Accountability (Wilbow 12:14 AM Oct 30: every AI points out its own and others' inefficiencies, suggests fixes, and no heavy token spending happens without disclosure and a note it is held to)
+**Cost tiers. Say it before you spend it:**
+- **Cheap** (just do it): a syntax check, 1-3 tests, reading a section, one small edit.
+- **Medium** (do it, then name it in the report): one headless screenshot or perf run, a multi-file change, one CI build, reading a whole large file.
+- **Heavy** (ask Wilbow first, in one line, with the reason and a cheaper alternative): repeated perf or measurement runs, more than one rebuild of the same thing, a second attempt at a failed fix, a large refactor, long background jobs, anything that doesn't serve a DECIDED item or a FIX.
+**Every report's efficiency line names:** the medium or heavy actions taken and why; any waste by this AI (rework, a dead end, an unclear question that cost turns); any waste noticed from another AI or an earlier session (with its session ID); and one concrete suggestion.
+**On the record:** each session's line in docs/SESSION_LOG.md lists its heavy actions and waste noted (self and others). An AI starting a session reads its tool's last log line first; if it shows waste, it states the fix it will apply, in one line, before working. Facts and fixes, not blame. Wilbow reviews the log; a pattern of waste means smaller tasks or a different tool for that job.
+
 ## Reports (every time)
 - Short: what changed in player terms, what to try on the phone.
 - **Unanswered approvals first**, numbered, each with a recommendation, answerable in one line ("1 merge, 3 keep").
@@ -43,5 +51,5 @@ A GitHub check (.github/workflows/board-check.yml) fails any pull request that c
 - Merging to main builds the APK: don't build APKs locally.
 
 ## Cheap metrics (one line per session in docs/SESSION_LOG.md)
-`session ID | chat link | board items | outcome (merged / waiting / stopped) | rework? (y/n: redid something already "done") | chat turns (about)`
+`session ID | chat link | board items | outcome (merged / waiting / stopped) | rework? (y/n) | turns (about) | heavy actions (what, why) | waste noted (self / others, with fix)`
 Rework and turns per item are the numbers to watch; if either climbs, the next session starts with a smaller task or a clarifying question.
