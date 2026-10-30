@@ -9,6 +9,9 @@ says **which category each item is in**.
 
 ## The rules
 
+0. **Follow EFFICIENCY.md** (token-saving protocol: one task per chat, cheapest checks first, short reports with approvals, a line in docs/SESSION_LOG.md).
+
+
 1. **Every item is in exactly one category** (below). If you can't tell which, ask Wilbow; don't guess.
 2. **Ideas land in DISCUSSION by default.** Talking about something, brainstorming, "maybe", "what if", "eventually" = DISCUSSION. It is never built.
 3. **Only Wilbow moves an item to DECIDED**, in clear words ("build it", "yes, do X", "go"). Quote him and the time on the item.

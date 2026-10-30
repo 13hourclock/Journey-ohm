@@ -1,6 +1,6 @@
 # CLAUDE_START_HERE (also shipped as HANDOFF.md)
 
-> **First: read BOARD.md** (what is decided, built, proposed or only discussion; build only what is DECIDED) and, for Grok, GROK_HANDOFF.md.
+> **First: read EFFICIENCY.md (token-saving protocol) and BOARD.md** (what is decided, built, proposed or only discussion; build only what is DECIDED) and, for Grok, GROK_HANDOFF.md.
 
 For Claude or any AI coding assistant (or person) picking up **The Journey Ohm** (project name **Resonance 2.0**), owner **Wilbow Shmesh**.
 Read this first, then **COLLABORATION.md** (how to work with Wilbow), then **SUMMARY.md** (the main reference).
