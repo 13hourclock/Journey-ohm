@@ -22,6 +22,16 @@ Applies to every Claude chat, Grok and any other AI. Saving tokens must never me
 - **Current APK** and how to get it (release page `releases/tag/latest-build`, file `JourneyOhm-b<N>-<date>.apk`; the game's dev button shows `dev · b<N>`).
 - **Efficiency line**: any drain noticed this session and its simple fix.
 
+## Wrap-up is automatic (Wilbow 12:09 AM Oct 30: "ensure auto wrap up in case I forget")
+Never wait to be told. **Every pull request carries its own wrap-up**, so a chat can end at any moment without losing anything:
+1. Append Wilbow's new words from the session, verbatim with MDT times, to docs/WILBOW_VERBATIM.md (decisions also to docs/DECISIONS.md).
+2. Move or add the BOARD.md items it touches (new ideas go to DISCUSSION).
+3. Approved game changes: a line in the newest SUMMARY.md section.
+4. One line in docs/SESSION_LOG.md, plus open questions in the reply.
+Also do a full wrap-up without being asked when the chat gets long, a usage warning appears, or Wilbow says "wrap up".
+Every new chat **restates its task in one sentence** after reading BOARD.md, before building.
+A GitHub check (.github/workflows/board-check.yml) fails any pull request that changes the game (www/, android/, .github/) without touching BOARD.md.
+
 ## Memory lives in the repo, not in chats
 - Update BOARD.md (and SUMMARY.md for approved changes) in the same pull request as the work.
 - Merging to main builds the APK: don't build APKs locally.

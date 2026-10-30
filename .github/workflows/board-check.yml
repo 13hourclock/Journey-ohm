@@ -1,0 +1,17 @@
+# Wrap-up guard (EFFICIENCY.md): a pull request that changes the game must also update BOARD.md. Costs no AI usage.
+name: Board check
+on: pull_request
+jobs:
+  board:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Game changes need a BOARD.md update
+        run: |
+          CH=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          echo "$CH"
+          if echo "$CH" | grep -qE '^(www/|android/|\.github/)' && ! echo "$CH" | grep -qx 'BOARD.md'; then
+            echo "::error::This pull request changes the game but not BOARD.md. Wrap up: move the board item, append Wilbow's words, add a SESSION_LOG line (EFFICIENCY.md)."; exit 1; fi
+          echo "$CH" | grep -qx 'docs/SESSION_LOG.md' || echo "::warning::No docs/SESSION_LOG.md line in this pull request."
