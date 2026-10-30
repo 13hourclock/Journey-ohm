@@ -9,7 +9,7 @@ says **which category each item is in**.
 
 ## The rules
 
-0. **Follow EFFICIENCY.md** (token-saving protocol: one task per chat, cheapest checks first, short reports with approvals, a line in docs/SESSION_LOG.md).
+0. **Every AI tool starts from AGENTS.md** and follows EFFICIENCY.md (token-saving protocol: one task per chat, cheapest checks first, short reports with approvals, a line in docs/SESSION_LOG.md).
 
 
 1. **Every item is in exactly one category** (below). If you can't tell which, ask Wilbow; don't guess.
