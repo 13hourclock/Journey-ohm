@@ -10,10 +10,11 @@ const world = { pseed: 1, home: { trad: null }, terrOf: L => L };
 const sim = { ohms: [], world };
 const ohm = (calm, wild) => ({ scale: 'ohm', g: { calm }, wild, body: { x: 0, y: 0 } });
 // 1 the eight, equal base
-ok(TRADS.length === 8 && TRAD_IDS.join() === 'western,hindustani,maqam,gamelan,japan,wafrica,celtic,techno', 'eight traditions in order');
-const cnt = {}; for (let s = 1; s <= 8000; s++) { const T = planetTradition(s * 7919 + 3, null); cnt[T.id] = (cnt[T.id] || 0) + 1; }
+ok(TRAD_IDS.slice(0, 8).join() === 'western,hindustani,maqam,gamelan,japan,wafrica,celtic,techno', 'eight traditions in order (wave 1 first)');
+const W1 = { ...TRAD_OPTS, wave2: false };   // wave 1 checks run with wave 2 off (off = exactly as before)
+const cnt = {}; for (let s = 1; s <= 8000; s++) { const T = planetTradition(s * 7919 + 3, null, W1); cnt[T.id] = (cnt[T.id] || 0) + 1; }
 ok(Object.values(cnt).every(n => n > 850 && n < 1150), 'equal base spawn: each ~1/8 with no land lean ' + JSON.stringify(cnt));
-const land = new Float32Array(8); land[4] = 1; const cg = {}; for (let s = 1; s <= 4000; s++) { const T = planetTradition(s * 7919 + 3, land); cg[T.id] = (cg[T.id] || 0) + 1; }
+const land = new Float32Array(8); land[4] = 1; const cg = {}; for (let s = 1; s <= 4000; s++) { const T = planetTradition(s * 7919 + 3, land, W1); cg[T.id] = (cg[T.id] || 0) + 1; }
 ok(cg.gamelan > 1100 && cg.gamelan < 1700 && Object.keys(cg).length === 8, 'gamelan land leans to gamelan (' + cg.gamelan + '/4000) but every tradition still shows up');
 ok(JSON.stringify(planetTradition(4242, land)) === JSON.stringify(planetTradition(4242, land)), 'deterministic per planet');
 // 2 every recipe is well formed
@@ -36,7 +37,7 @@ ok(M.tradFeel === T.tight && M.tradDiv === T.div && M.trad === T, 'feel set');
 ok(PLACE.trad[T.pal] === 1 && Object.keys(PLACE.trad).length === 1, 'instrument lean set on ' + T.pal);
 ok(world.tradition && world.tradition(777) === T.songShape, 'songs take the tradition shape');
 // plant each one: check its parts
-for (const id of TRAD_IDS) { R.plant(id); R.tick(); const C = R.cur; ok(C.id === id && M.tuning === C.tuning && (!C.cycle || TRAD_CYCLE[C.pal] === C.cycle) && (C.harm !== 'drone' || H.tonicPull === 1.5) && (C.harm === 'drone' || !H.tonicPull) && !H.hold,
+for (const id of TRAD_IDS) { R.plant(id); R.tick(); const C = R.cur; ok(C.id === id && M.tuning === C.tuning && (!C.cycle || TRAD_CYCLE[C.pal] === C.cycle) && (C.harm !== 'drone' || H.tonicPull === (C.pull != null ? C.pull : 1.5)) && (C.harm === 'drone' || !H.tonicPull) && !H.hold,
   'plant ' + id + ': ' + C.scale + ', ~' + C.bpm + ' -> ' + M.bpm.toFixed(0) + ' BPM, cycle ' + C.cycle + ', ' + C.harm); }
 // accent: cycle weight scales loudness, never drops
 R.plant('techno'); R.tick(); const o = ohm(.5); sim.ohms.push(o); R.stamp(o); const seen = []; bus.on('note', ev => seen.push(ev));
@@ -51,7 +52,7 @@ ok(Math.abs(w.lively - 1) < 1e-9 && Math.abs(o.lively - .7) < 1e-9, 'lively 0..1
 const F = R.feed(); ok(F && F.auraPalette.length >= 4 && F.auraPalette.length <= 6 && ['glow', 'line', 'fill', 'accent'].every(k => F.auraRoles[k] && F.auraRoles[k].length === 3), 'aura palette: 4-6 linear RGB with glow / line / fill / accent roles');
 const P = F.auraPattern; ok(P.kind === 'grid' && P.fold && P.density != null && P.speed > 0 && P.beatLock === R.cur.tight && P.rings.length && P.rings[0].speed != null && P.pulse.period === 4 && P.pulse.phase === 0, 'aura pattern fields incl. rings[] and pulse');
 ok(F.cycle && F.cycle.name === 'four' && typeof F.offScale === 'boolean', 'feed: cycle position + off-scale flag');
-const kinds = TRAD_IDS.map(id => planetTradition(5, null, TRAD_OPTS, id).auraPattern.kind).join(); ok(kinds === 'tracery,lotus,lattice,rings,waves,weave,knot,grid', 'pattern kinds ' + kinds);
+const kinds = TRAD_IDS.slice(0, 8).map(id => planetTradition(5, null, TRAD_OPTS, id).auraPattern.kind).join(); ok(kinds === 'tracery,lotus,lattice,rings,waves,weave,knot,grid', 'pattern kinds ' + kinds);
 ok(planetTradition(5, null, TRAD_OPTS, 'hindustani').timeOfDay != null && planetTradition(5, null, TRAD_OPTS, 'western').timeOfDay == null, 'ragas carry timeOfDay');
 // toggles + undo
 TRAD_OPTS.enabled.techno = false; R.plant(null); for (let s = 1; s < 60; s++) { world.pseed = s; R.tick(); if (R.cur.id === 'techno') { ok(false, 'disabled tradition picked'); break; } } TRAD_OPTS.enabled.techno = true;

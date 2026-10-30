@@ -32,7 +32,7 @@ export function createJamKeys({ sim, bus, music, harmony, autojam, songs, opts =
     if (best == null) return null; K.lastStep = typeof best === 'object' ? best.how : (best - k + 12) % 12; K.hist.unshift(K.lastStep); K.hist.length = Math.min(K.hist.length, 3); return best; };   // the members' homes choose; a journey seldom repeats the last one
   const goMode = (mode, how) => { const r0 = music.chord.root, wasRel = music.modeHow === 'rel'; if (!music.setMode(mode, how)) return false;
     const r = mode === 'minor' && how === 'rel' ? (r0 + 2) % 7 : mode === 'major' && wasRel ? (r0 + 5) % 7 : r0;   // rel: vi (5) -> i (0); back: i -> vi
-    music.chord = { root: r, tones: [r, r + 2, r + 4] }; for (const f of music.listeners || []) f(); K.modes++; K.wait = 0;
+    music.chord = { root: r, tones: music.tonesOf ? music.tonesOf(r) : [r, r + 2, r + 4] }; for (const f of music.listeners || []) f(); K.modes++; K.wait = 0;
     if (bus && bus.post) bus.post({ type: 'jam.mode', mode, how: how || null, key: music.key }); return true; };
   const modeReady = (how, back) => { const r = music.chord.root; if (K.wait >= O.waitBars) return true;
     return how === 'rel' ? (back ? [0, 5, 3].includes(r) : [5, 3, 1].includes(r)) : [0, 4].includes(r); };

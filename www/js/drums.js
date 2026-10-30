@@ -74,6 +74,29 @@ Object.assign(CYCLES, {
   hornpipe: mk(2, 4, { low: [0], back: { 4: .8 } }, { time: .4 }),                                                       // counted in 2; the dotted 2:1 lilt = music.swing 1
   four: mk(4, 4, { low: [0, 4, 8, 12], time: wt([2, 6, 10, 14], .6), back: { 4: .8, 12: .8 } }, { colour: .25 }),               // techno / house four-on-the-floor
 });
+// TRADITIONS wave 2 (traditions_wave2.js; TRADITION_REFERENCE 1.2-1.29). Steps on each cycle's own grid; roles as above.
+const all = (n, g = 1) => Array.from({ length: n / g }, (_, i) => i * g);
+Object.assign(CYCLES, {
+  shuffle: mk(4, 3, { low: [0, 6], back: [3, 9], time: wt([0, 3, 5, 6, 9, 11], .6) }, { colour: .1 }),                       // blues / jazz: triplet grid, ride spang-a-lang, snare / hat 2 & 4
+  rock: mk(4, 4, { low: { 0: 1, 8: 1, 10: .6 }, back: [4, 12], time: wt(all(16, 2), .5) }, { colour: .15 }),                  // rock: kick 1, 3 (+ and of 3), snare 2 & 4, hats 8ths
+  funk16: mk(4, 4, { low: { 0: 1.3, 3: .6, 10: .9 }, back: [4, 12], time: wt(all(16), .4), colour: { 14: .6 } }, { time: .3 }),  // funk: the One heaviest, 16th hats, horn stab on the and of 4
+  rumbaclave: mk(8, 4, { time: [0, 6, 14, 20, 24], low: { 6: .8, 12: .8, 22: .8, 28: .8 }, tom: { 12: .7, 30: .7 } }, { tom: .2 }),   // rumba clave 3-2 (third stroke one step late)
+  samba: mk(4, 4, { low: { 4: 1.2, 12: 1.2, 0: .7, 8: .7 }, time: wt([3, 7, 11, 15], .8), colour: wt([1, 4, 6, 8, 10, 13, 15], .5) }, { time: .35 }),   // surdo on 2 of each 2/4, 4th-16th accent, partido-alto tamborim
+  bossa: mk(4, 4, { low: { 0: 1, 6: .5, 8: .9, 14: .5 }, back: wt([0, 3, 6, 10, 13], .55) }, { time: .2 }),                  // bass root / 5th on 1 & 3 with pickups, rim on the bossa pattern
+  solea: mk(12, 1, { back: wt([2, 5, 7, 9, 11], 1), low: { 9: 1.2 } }, { time: .3 }),                                            // soleá compás: accents 3 6 8 10 12, lands on count 10
+  lesnoto: mk(3.5, 2, { low: { 0: 1.2, 3: .8, 5: .9 } }, { time: .7 }),                                                        // 7/8 = 3+2+2
+  daychovo: mk(4.5, 2, { low: { 0: 1.2, 2: .8, 4: .8, 6: 1 } }, { time: .7 }),                                                 // 9/8 = 2+2+2+3
+  kopanitsa: mk(5.5, 2, { low: { 0: 1.2, 2: .8, 4: 1, 7: .8, 9: .8 } }, { time: .7 }),                                         // 11/8 = 2+2+3+2+2
+  semai10: mk(5, 2, { low: { 0: 1.3, 5: 1 }, back: { 3: .6, 7: .6 } }, { time: .4 }),                                          // Turkish aksak semai 10/8 = 3+2+2+3, düm on 1 and 6
+  aksak9: mk(4.5, 2, { low: { 0: 1.3, 6: 1 }, back: { 2: .6, 4: .6 } }, { time: .4 }),                                         // Turkish aksak 9/8 = 2+2+2+3
+  sixeight: mk(2, 6, { low: { 0: 1, 6: .8 }, tom: { 4: .7, 10: .7 } }, { time: .15 }),                                          // 6/8 gallop / reng (long-short-short)
+  huayno: mk(2, 4, { low: { 0: 1.2, 6: .9 }, tom: wt([2, 3, 4, 7], .5) }, { time: .25 }),                                       // huayno 2/4: bombo 1 and the and of 2, long-short-short
+  onedrop: mk(4, 4, { low: { 8: 1.3 }, back: { 8: 1 }, time: wt(all(16, 2), .4) }, { colour: .1 }),                           // reggae one drop: beat 1 empty, kick + rim on 3
+  dnb: mk(4, 4, { low: { 0: 1.2, 10: 1 }, back: { 4: 1.2, 12: 1.2 }, time: wt(all(16, 2), .35) }, { time: .2 }),                // drum and bass two-step
+  banyan: mk(2, 2, { low: { 0: 1 }, back: { 2: .4 } }, { time: .2 }),                                                         // Chinese 2/4: ban (clapper) strong, yan weak
+  rupaka6: mk(6, 2, { low: { 0: 1.4 }, back: { 4: .9 } }, { tom: .35 }),                                                       // Carnatic rupaka 6 beats (drutam 2 + laghu 4)
+  pulse8: mk(4, 2, { time: wt(all(8), .55), low: { 0: .6 } }, { time: .5 }),                                                    // minimal: steady 8ths
+});
 // palette tradition ids -> cycle (traditions.js points a tradition's id at the planet's chosen cycle; setTradCycle(id, null) restores)
 export const TRAD_CYCLE = { cuban: 'clave', son: 'clave', rumba: 'clave', wafrica: 'bell', hindustani: 'teentaal', carnatic: 'adi', gamelan: 'gongan', java: 'gongan', bali: 'gongan', aksak: 'aksak' };
 const TC0 = { ...TRAD_CYCLE };

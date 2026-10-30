@@ -226,21 +226,21 @@ const SHAPE = {
 // auraPattern: kind, fold, density, speed (per ring, whole symmetry steps per loop), loopBeats, pulse ('beat' | 'bar' | 'phrase'), beatLock 0..1
 // (how much the alpha pulses on the beat), swing (offbeat delay, beats), calm 0..1 (calm traditions drift: no flicker), live (the live line), sig (signature)
 export const TRADITIONS = [
-  { id: 'folk', names: ['folk', 'hymn', 'western', 'folk & hymn', 'western folk'], ohm: '#d98a6a', bl: .7, paint: folk, live: folkLive, shape: 'scallop',
+  { id: 'folk', names: ['folk', 'hymn', 'western', 'folk & hymn', 'western folk', 'classical', 'rockpop', 'blues', 'jazz', 'bossa' /* wave 2 placeholder family (Visuals to design) */], ohm: '#d98a6a', bl: .7, paint: folk, live: folkLive, shape: 'scallop',
     auraPalette: { glow: '#d9a441', line: '#ecdcb4', fill: '#241a12', accent: '#f0cf7a' }, auraPattern: { kind: 'rose', fold: 12, density: 1, speed: [1], loopBeats: 64, pulse: 'phrase', beatLock: .15, swing: 0, calm: .7, sig: 'phrase' } },
   { id: 'raga', names: ['raga', 'hindustani', 'indian', 'carnatic'], ohm: '#9a7ad8', bl: 1, paint: raga, live: ragaLive, shape: 'petal',
     auraPalette: { glow: '#4a50b0', line: '#d6dcf0', fill: '#1a1c48', accent: '#e8a8be' }, auraPattern: { kind: 'lotus', fold: 10, density: 1, speed: [1, 1, 1, 1, 1], loopBeats: 32, pulse: 'phrase', beatLock: 0, swing: 0, calm: 1, sig: 'glide' } },
-  { id: 'maqam', names: ['maqam', 'arabic', 'persian', 'dastgah', 'turkish', 'makam'], ohm: '#4fb0b8', bl: .35, paint: maqam, live: maqamLive, shape: 'star8',
+  { id: 'maqam', names: ['maqam', 'arabic', 'persian', 'dastgah', 'turkish', 'makam', 'flamenco' /* wave 2 placeholder family (Visuals to design) */], ohm: '#4fb0b8', bl: .35, paint: maqam, live: maqamLive, shape: 'star8',
     auraPalette: { glow: '#2fa6a0', line: '#e8e2d2', fill: '#1d3f8f', accent: '#e8c47a' }, auraPattern: { kind: 'lattice', fold: 8, density: 38, speed: [1], loopBeats: 64, pulse: 'bar', beatLock: .2, swing: 0, calm: .5, sig: 'offScale' } },
-  { id: 'gamelan', names: ['gamelan', 'javanese', 'balinese', 'indonesian'], ohm: '#d8a040', bl: 1, paint: gamelan, live: gamelanLive, shape: 'knobs',
+  { id: 'gamelan', names: ['gamelan', 'javanese', 'balinese', 'indonesian', 'overtone' /* wave 2 placeholder family (Visuals to design) */], ohm: '#d8a040', bl: 1, paint: gamelan, live: gamelanLive, shape: 'knobs',
     auraPalette: { glow: '#7a1f1a', line: '#d6aa50', fill: '#0c0808', accent: '#ffd678' }, auraPattern: { kind: 'bosses', fold: 14, density: 1, speed: [2, 2, 3], loopBeats: 16, pulse: 'beat', beatLock: .5, swing: 0, calm: .3, sig: 'gong' } },
-  { id: 'japan', names: ['japan', 'japanese', 'gagaku', 'shakuhachi', 'koto'], ohm: '#d8a8b8', bl: 1, paint: japan, live: japanLive, shape: 'wave',
+  { id: 'japan', names: ['japan', 'japanese', 'gagaku', 'shakuhachi', 'koto', 'china' /* wave 2 placeholder family (Visuals to design) */], ohm: '#d8a8b8', bl: 1, paint: japan, live: japanLive, shape: 'wave',
     auraPalette: { glow: '#6a7aa8', line: '#506eaa', fill: '#121a38', accent: '#c8323c' }, auraPattern: { kind: 'seigaiha', fold: 6, density: 15, speed: [1], loopBeats: 64, pulse: 'phrase', beatLock: 0, swing: 0, calm: 1, sig: 'breath' } },
-  { id: 'wafrica', names: ['wafrica', 'west african', 'african', 'kente', 'djembe', 'ewe'], ohm: '#e08a3a', bl: .55, paint: westAfrica, live: westAfricaLive, shape: 'notch',
+  { id: 'wafrica', names: ['wafrica', 'west african', 'african', 'kente', 'djembe', 'ewe', 'cuban', 'rumba', 'samba', 'reggae' /* wave 2 placeholder family (Visuals to design) */], ohm: '#e08a3a', bl: .55, paint: westAfrica, live: westAfricaLive, shape: 'notch',
     auraPalette: { glow: '#e0a51c', line: '#e8dcbe', fill: '#8a5a24', accent: '#c8961f' }, auraPattern: { kind: 'kente', fold: 3, density: 12, speed: [3, 2], loopBeats: 32, pulse: 'beat', beatLock: .6, swing: .12, calm: 0, sig: 'downbeat2' } },
-  { id: 'celtic', names: ['celtic', 'irish', 'scottish', 'breton', 'gaelic'], ohm: '#7fbf8a', bl: 1, paint: celtic, live: celticLive, shape: 'triquetra',
+  { id: 'celtic', names: ['celtic', 'irish', 'scottish', 'breton', 'gaelic', 'modal', 'aksak', 'andean' /* wave 2 placeholder family (Visuals to design) */], ohm: '#7fbf8a', bl: 1, paint: celtic, live: celticLive, shape: 'triquetra',
     auraPalette: { glow: '#4f6b3a', line: '#b58a35', fill: '#1e1610', accent: '#dcb95f' }, auraPattern: { kind: 'interlace', fold: 5, density: 1, speed: [1, -1], loopBeats: 64, pulse: 'bar', beatLock: .1, swing: 0, calm: .6, sig: 'sustain' } },
-  { id: 'techno', names: ['techno', 'house', 'electronic', 'edm', 'trance'], ohm: '#c070e0', bl: 1, paint: techno, live: technoLive, shape: 'stepped', frames: 12, discrete: true,
+  { id: 'techno', names: ['techno', 'house', 'electronic', 'edm', 'trance', 'dnb', 'minimal', 'funk' /* wave 2 placeholder family (Visuals to design) */], ohm: '#c070e0', bl: 1, paint: techno, live: technoLive, shape: 'stepped', frames: 12, discrete: true,
     auraPalette: { glow: '#8a3dff', line: '#22e0ff', fill: '#04020a', accent: '#ff8a1e' }, auraPattern: { kind: 'steps', fold: 4, density: 10, speed: [1], loopBeats: 48, pulse: 'beat', beatLock: 1, swing: 0, calm: 0, sig: 'kick' } },
 ];
 const BY = new Map(); TRADITIONS.forEach((t, i) => { t.i = i; BY.set(t.id, t); for (const n of t.names) BY.set(n, t); });

@@ -46,6 +46,7 @@ import { createPersist } from './persist.js';
 import { createSystems } from './systems.js';
 import { createTraditions } from './traditions.js';
 import { BODY_PLAN } from './bodyplan.js';
+import { createGuests } from './guest.js';
 import { createShapePlay } from './shapeplay.js';
 import { createBystand } from './bystand.js';
 import { createAbilities, ABILITIES } from './abilities.js';
@@ -106,6 +107,9 @@ const systems = createSystems({ sim, bus, music, harmony, autojam, world, sing, 
 systems.attachPanel(panel && panel.root || document.getElementById('dev'));
 const traditions = createTraditions({ sim, bus, music, harmony, world });   // TRADITIONS wave 1: one per planet (seed + land lean); tuning, tempo, feel, cycle, lean, drone, song shape; aura data hooks only
 systems.switches.push({ k: 'bodyPlans', label: 'body plans (first game): blob / shell / serpent / strider / drum-belly / cluster / floater from the instrument, gene outlines, legs, tails, spikes, fronds, feelers, keels, bands, plates, bubbles, serpent segments (off = the v0.0.30 round / long / lobed bodies)', get: () => BODY_PLAN.on, set: v => { BODY_PLAN.on = !!v; for (const o of sim.ohms) if (o.scale === 'ohm' && o.g && sim.regrow) { const f = o.g.float; sim.regrow(o); o.g.float = f; } } });
+// GUEST ACCENT (Wilbow 9:37 / 9:39 PM Oct 29): ohms carried to another planet keep their home tradition and play its accent inside the host jam's frame
+const guests = createGuests({ sim, bus, music, traditions, persist });
+systems.switches.push({ k: 'guestAccent', label: 'guest ohms (carried from another planet) keep their home tradition: in a host jam they lean weak notes to their home focus notes, add home ornaments (grace notes) and rest like home - always in the host key, tuning, tempo and cycle', get: () => guests.opts.on, set: v => { guests.opts.on = !!v; }, info: () => guests.info() });
 traditions.attachPanel(panel && panel.root || document.getElementById('dev'));
 const things = createThings({ sim, bus, music, persist, undo: systems.undo, size: () => render.size(), canvas, render });   // step 5 E + F: effect objects + drawn instruments (after the systems shapes)
 things.fuse = systems.fuse;   // Q351: fused groups grow strings (things.js groupTick)
@@ -205,6 +209,12 @@ systems.switches.push({ k: 'learnSolo', label: 'TASTE (Q10 / Q182): a fully lear
 const conduct = createConduct({ sim, bus, music, size: () => render.size(), toScreen: (W, H, c, x, y) => toScreen(W, H, c, x, y) }); systems.conduct = conduct; sim.conductOwns = conduct.owns; conduct.attach(canvas);
 systems.switches.push({ k: 'conduct', label: 'conducting: baton up = ohms in view watch you and wait; beats set tempo (upstroke = upbeat), hand height = loudness, a stroke through an ohm cues it, flick down = cut off', get: () => conduct.opts.on, set: v => { conduct.opts.on = !!v; if (!v) conduct.release('off'); }, info: () => `${conduct.raises} raised, ${conduct.beats} beats, ${conduct.tempos} tempo changes, ${conduct.cues} cues, ${conduct.cuts} cut-offs` });
 systems.switches.push({ k: 'conductGesture', label: 'CLASH: two fingers resting still on bare ground raise the baton (takes that hold from "shape the ground with your voice"; a 3rd finger conducts) (off)', get: () => conduct.opts.gesture, set: v => { conduct.opts.gesture = !!v; } });
+// Wilbow Oct 28 2026, 9:28 PM: "Go with recs" (claude/JourneyOhm_decisions_2026-10-28.md). New defaults; every switch still toggles in the dev panel.
+{ const D = { windRocks: true, lightPlay: true, skyMood: true, critters: true, eggWords: true, clay: false, jamView: true, bubbleCatch: true, conductGesture: true };
+  for (const w of systems.switches) if (w.k in D && w.set) { try { w.set(D[w.k]); } catch (e) { console.warn('default', w.k, e); } }
+  Object.assign(skyMood.opts, { nightVel: .15, nightLow: .85, rainThin: .2 });   // #417 "slightly": half the gentle preset
+  conduct.opts.near = (x, y) => { const { W, H } = render.size(); for (const X of jamView.groups()) for (const m of X.members) { if (!m.body) continue; const s = toScreen(W, H, sim.cam, m.body.x, m.body.y); if (Math.hypot(x - s.x, y - s.y) < 180) return true; } return false; };   // #413 A
+}
 const craze = createCraze({ sim, bus, music, songs: systems.songs }); systems.craze = craze;
 { const sl0 = sim.shapeLean; sim.shapeLean = (P, turn, tn) => craze.borrow(P, turn, tn) || (sl0 ? sl0(P, turn, tn) : null); }
 systems.switches.push({ k: 'craze', label: 'traditions: a tune that catches spreads ohm to ohm as a craze; once enough ohms play it, it is the place\'s tradition', get: () => craze.opts.on, set: v => { craze.opts.on = !!v; }, info: () => `${craze.list.length} crazes, ${craze.catches} caught it, ${craze.plays} plays, ${craze.trads} became tradition` });
@@ -240,4 +250,4 @@ bus.land = sim.opts.land;   // when a tap change lands in a jam (Wilbow 6A+6D, p
 const q = new URLSearchParams(location.search);
 if (q.has('nojam')) sim.opts.jam.on = false;   // test hook: compare timings without the partner
 if (q.has('autostart') || q.has('selftest')) startAudio(false).then(() => { if (q.has('selftest')) { selftest.res = null; setTimeout(() => selftest.start(+q.get('selftest') || 60), 300); } });
-globalThis.JO = { things, drums, audio, music, sim, events: bus, matrix, sound, pulse, frames, selftest, ctl, panel, jam, sing, harmony, blend, brain, influence, autojam, world, render, zoom, quality, systems, persist, clock, rare, traditions, trippy, jamRoles, jamKeys, jamGrow, learnVoice, conduct, craze, audioSig };
+globalThis.JO = { guests, things, drums, audio, music, sim, events: bus, matrix, sound, pulse, frames, selftest, ctl, panel, jam, sing, harmony, blend, brain, influence, autojam, world, render, zoom, quality, systems, persist, clock, rare, traditions, trippy, jamRoles, jamKeys, jamGrow, learnVoice, conduct, craze, audioSig };

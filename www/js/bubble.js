@@ -20,7 +20,7 @@ import { shapeOf } from './things.js';
 import { endRest } from './clay.js';
 import { noLine, softRing, softDot } from './soft.js';
 // v0.0.31 note: the old game never saved bubbles (surface.js packChunk skips bubble bodies and caught creatures), so neither do we; the ohm itself stays saved, free.
-export const BUBBLE_OPTS = { on: false, restMs: 450, restPx: 8, rK: 1.7, rPad: 10, minR: 30, tapMs: 300, tapPx: 10, flickV: .9, flickPx: 110, bubbleVel: .45, bob: 4, landPx: 70, max: 6 };
+export const BUBBLE_OPTS = { on: false, restMs: 450, restPx: 8, rK: 1.7, rPad: 10, minR: 30, tapMs: 300, tapPx: 10, flickV: .9, flickPx: 110, setMs: 900, setPx: 12, bubbleVel: .45, bob: 4, landPx: 70, max: 6 };
 const TAU = 6.2832;
 const inPoly = (pts, x, y) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const a = pts[i], b = pts[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / ((b[1] - a[1]) || 1e-9) + a[0]) c = !c; } return c; };
 // a closed loop (the same test as things.js classify), screen points [[x, y, t]...]
@@ -50,8 +50,10 @@ export function createBubbles({ sim, bus, undo, toS, toW, world, me = () => sim.
   B.hitAt = (x, y) => { if (!O.on) return null; let best = null, bd = 1e9; for (const b of B.list.values()) { const s = toS(b.x, b.y), d = Math.hypot(x - s.x, y - s.y); if (d < sR(b) && d < bd) { bd = d; best = b; } } return best; };
   // finger plumbing (gestures.js owns the pointer once it starts on a bubble)
   B.down = (b, p) => { B.drag = { b, p, ox: 0, oy: 0, moved: false }; const s = toS(b.x, b.y); B.drag.ox = s.x - p.x0; B.drag.oy = s.y - p.y0; };
-  B.move = p => { const d = B.drag; if (!d || d.p !== p) return; if (!d.moved && Math.hypot(p.x - p.x0, p.y - p.y0) < O.tapPx) return; d.moved = true; const w = toW(p.x + d.ox, p.y + d.oy); d.b.x = w.x; d.b.y = w.y; };
-  B.up = (p, cancel) => { const d = B.drag; B.drag = null; if (!d || d.p !== p || cancel) return null; const o = d.b.o, dt = now() - p.t0;
+  B.move = p => { const d = B.drag; if (!d || d.p !== p) return; if (!d.moved && Math.hypot(p.x - p.x0, p.y - p.y0) < O.tapPx) return; d.moved = true; if (d.set) return; const w = toW(p.x + d.ox, p.y + d.oy); d.b.x = w.x; d.b.y = w.y;
+    // Oct 28 (#419): hold a carried bubble still ~0.9 s = set it down here (frees the ohm on this spot); the home hold is unchanged elsewhere
+    if (O.setMs > 0 && (!d.ax || Math.hypot(p.x - d.ax, p.y - d.ay) > O.setPx)) { d.ax = p.x; d.ay = p.y; clearTimeout(d.st); d.st = setTimeout(() => { if (B.drag !== d || d.set) return; d.set = true; B.free(d.b.o); B.setDowns = (B.setDowns | 0) + 1; bus.post({ type: 'bubble.setdown' }); }, O.setMs); } };
+  B.up = (p, cancel) => { const d = B.drag; B.drag = null; if (d) clearTimeout(d.st); if (!d || d.p !== p || cancel) return null; if (d.set) return { k: 'setdown' }; const o = d.b.o, dt = now() - p.t0;
     if (!d.moved && dt < O.tapMs * 2) { B.free(o); return { k: 'pop' }; }
     const v = fingerUpV(p); if (v && -v.vy >= O.flickV && p.y0 - p.y >= O.flickPx) { B.farewell(o); return { k: 'farewell' }; }
     return { k: 'carry' }; };

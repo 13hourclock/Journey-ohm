@@ -53,7 +53,7 @@ export function createHarmony(world, bus, music) {
     const NZ = H.nudge; let nzT = 0; for (const x of NZ) nzT += x; const nzW = O.harm.nudge !== false && nzT ? (O.harm.nudgeW == null ? 1.2 : O.harm.nudgeW) / nzT : 0;
     let br = root, bs = -1; for (let r = 0; r < 7; r++) { if (r === root) continue; let s = PRIOR[root][r] * .5 + (P && P.chord === r ? 3 : 0) + (r === 0 && H.tonicPull ? H.tonicPull : 0); for (const pc of pcsM(nk, r)) s += W[pc] + NZ[pc] * nzW; if (s > bs) { bs = s; br = r; } }
     NZ.fill(0);
-    music.chord = { root: br, tones: [br, br + 2, br + 4] }; H.moves++; for (const f of music.listeners) f(); return true; };
+    music.chord = { root: br, tones: music.tonesOf ? music.tonesOf(br) : [br, br + 2, br + 4] }; H.moves++; for (const f of music.listeners) f(); return true; };
   // moves on bar lines, every opts.harm.bars bars (only while on)
   H.tick = () => { if (!O.harm || !O.harm.on) return; const b = music.beat(), every = 4 * (O.harm.bars || 2); if (!H.nextB) H.nextB = Math.ceil(b / every) * every; if (b >= H.nextB) { H.nextB = Math.floor(b / every) * every + every; H.step(); } };
   return H;
@@ -127,5 +127,7 @@ export function createMusic(timeSource) {
   M.when = (t = M.now()) => { const J = M.jam; if (!J) return t; const div = J.div || 1, s = J.snap == null ? 1 : J.snap; if (s <= 0) return t;
     const b = M.beat(t), sw = M.swing > 0 ? M.swing / (3 * div) : 0, gi = Math.round((b - (sw ? sw * .5 : 0)) * div), g = gi / div + (sw && gi % 2 ? sw : 0); if (g <= b + 1e-9) return t; const u = Math.min(1, (g - b) * div * 2), pull = s >= 1 ? 1 : Math.max(0, Math.min(1, (1 - u) / (1 - s)));
     return pull <= 0 ? t : M.timeOfBeat(b + (g - b) * pull); };
+  // chord shape for a root slot: the planet tradition's voicing (wave 2: 7ths, blues dominants), else the plain triad (unchanged)
+  M.tonesOf = r => M.trad && M.trad.voice ? M.trad.voice(r) : [r, r + 2, r + 4];
   return M;
 }
