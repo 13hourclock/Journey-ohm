@@ -27,7 +27,10 @@ says **which category each item is in**.
 
 | ID | Area | What | His words | Status |
 |---|---|---|---|---|
-| (none open) | | | | |
+| W2 | World | **Jam trees.** A jam that holds strong harmony, rhythm and musical soundness for a while grows a tree. The song builds it: chord changes split branches, rhythm sets lengths and spacing, key and tradition set colours (several colours per tree; a key change shows as a colour shift along a limb). Generated from growth math and sacred geometry (golden-angle sunflower spirals, fern fractals, L-system branching, flower of life, Metatron's cube), never stamped. Blooms open at peak moments. Look samples: docs/concepts/jam_trees/tree_previews.png (tools/tree_preview_gen.py) | 12:53 PM Oct 30: "Approved for integration in to the build next pass" | next pass; switch jamTrees |
+| W3 | World | **Trees grow with play.** Every jam and ohm interaction makes a tree thicker and more complex; growth rings are viewable; each ohm leaves its own mark (e.g. drummer: rhythmic bark texture, singer: flowing tendrils) | 12:50 PM: "The trees should grow thicker and more complex with ohm interactions and jams"; 12:53 PM: "Growth rings being viewable is great and I like the other ideas. Approved ..." | next pass; switch jamTrees |
+| W4 | World | **Exploring a tree.** Smooth pinch-zoom by drifting your focus; the closer you get, the finer the detail and the louder that part of the jam; as free as exploring a planet (not a guided replay). A jam is stored as notes + a seed, so look and sound always match | 12:13 PM: "the controls are really smooth so that you can easily pinch and zoom to different things by drifting your focus around"; approved 12:53 PM | next pass; switch jamTrees |
+| W5 | Ohms | **Ohms learn at trees.** Bring ohms to a tree; each takes in the jam in its own way and gains experience, and gives growth back | 12:13 PM: "the trees should be a place where you can bring ohms to gather experience"; approved 12:53 PM. Open: by being near, or by playing along with a branch? | next pass; switch jamTrees |
 
 ## 2. BUILT (check on the phone, then say keep / change / undo)
 
@@ -53,7 +56,8 @@ says **which category each item is in**.
 
 | ID | Area | What | From |
 |---|---|---|---|
-| (none open) | | | |
+| P1 | World | How to draw trees on a phone (research Oct 30): shapes from geometry (L-systems, golden-angle, fern math) as the backbone; GPU shaders paint them (domain-warp colour flow, reaction-diffusion patterns, kaleidoscope symmetry) and give endless zoom detail; flame fractals only as rare peak blooms, drawn once into a saved image | Claude (builder's call until he says yes) |
+| P2 | World | Blooms pollinated by other trees give a seed mixing both jams' musical DNA, editable before planting. Open: simple sliders, or deep like the synth editor? | Wilbow 12:15 PM idea; how it edits: open |
 
 ## 4. DISCUSSION (ideas and thinking; never built from here)
 
@@ -63,9 +67,12 @@ says **which category each item is in**.
 | M4 | Music | **Several song groups at once.** Only one group (the "carrier") drives the shared chord; on-beat notes fit its chord 77-87%, but other groups nearby play their own charts over it (49-69% fit). Options: nearby groups lock onto one chart; others fade with distance; groups take turns; it stays as texture. | measured Oct 29 |
 | M5 | Music | **What happens when traditions meet** (learning each other's accents, blended songs, a craze crossing planets, new hybrid traditions). The hook exists (bus 'trad.meet'); outcomes not designed. | Wilbow 9:37 PM Oct 29: "We don't need to calculate all those outcomes yet" |
 | O3 | Ohms | Stylize the ohms further | Wilbow 9:24 PM Oct 29: later, not a priority |
-| W1 | World | Pyramids as resonance / synchronization devices found on planets | earlier chat; planet exploration not built |
+| W1 | World | Pyramids as resonance / synchronization devices found on planets; idea Oct 30: trees power pyramids, linked pyramids join planets (unity across the universe) | earlier chat; planet exploration not built |
 | X1 | All | **Work in passes** (Wilbow 11:43 PM Oct 29: "everything currently visible in the game a place holder ... needs done in passes"): Pass 0 placeholder, 1 works, 2 connected (feeds and reacts to other systems), 3 styled. Every system moves one pass at a time, each with his OK. | keep discussing (11:45 PM: "keep the other ideas in discussion for a while") |
 | X2 | All | **Explore before building**: one-page idea sheets per connection (options + sketches, nothing built until he picks); prototype scenes behind dev switches (one app); one full slice first (e.g. sound -> visuals through every pass) to set the pattern | keep discussing |
+| I1 | Music / Ohms | **Instruments as their own layer** (in code: sound engines, separate from the music logic). Each ohm: its own voice + one instrument slot, so it can sing and play; instruments can be handed around; skill per instrument family (lots of drums = better at drums); custom instruments made with the synth engine count as real instruments. See also PLAN_INSTRUMENTS.md, INSTRUMENT_PALETTE.md | Wilbow 11:55 AM-11:59 AM Oct 30 |
+| I2 | Music | **Emergent genres.** The game sorts custom sounds into families by their sound; sounds that fit none group into new families or genres on their own, slowly and only after consistent use; early encounters stick to proven music | Wilbow 11:58 AM, 11:59 AM Oct 30 |
+| X4 | All | **Soft guardrails.** Nothing blocked, but every edit shows its effects before you commit (e.g. a note that would go out of key glows), at every scale: note, ohm, jam, planet / tradition | Wilbow 12:01 PM Oct 30: "just as a concept" |
 | X3 | All | **System map** (built 11:45 PM Oct 29, exploration only): every system, its pass, and every connection marked connected / thin / placeholder / missing. Page: https://claude.ai/artifact/JtEN4zwcirU6ptx589VjmD ; copy: docs/SYSTEM_MAP.html | for choosing what to explore next |
 
 ## 5. FIXES (bugs, no taste call)
