@@ -8,6 +8,7 @@ import { KINDS, ALL_KINDS, makeInsert, apply as fxApply } from '../www/js/fxkind
 import { createMusic } from '../www/js/music.js';
 const SR = 48000; const now = () => 0; now.perf = () => performance.now();
 const d = DSPFactory(SR, now, InstFactory, FXFactory), L = new Float32Array(128), R = new Float32Array(128); let fails = 0;
+d.msg({ t: 'budget', o: { on: false } });   // raw engine cost: the audio budget (F8) is measured on its own below
 const music = createMusic(() => 0);
 const rec = makeRecipe(12345); rec.mix = { modal: 1, synth: 1 };
 const budget = 128 / SR * 1000, out = [];
@@ -45,4 +46,8 @@ reset(); d.msg({ t: 'note', id: 9999, at: 5, ...voicesFor(rec, { f: 200, vel: .8
 // v0.0.28 deaf muffle: 32 modal voices bypassed vs fully muffled (2-pole master low-pass, swept per sample); must stay under 0.02 ms/block extra
 { reset(); play(32, 'note'); d.msg({ t: 'param', k: 'muffle', v: 0 }); for (let i = 0; i < 100; i++) d.render(L, R, 128); const off = time(); d.msg({ t: 'param', k: 'muffle', v: 1 }); const on = time(); d.msg({ t: 'param', k: 'muffle', v: 0 }); for (let i = 0; i < 100; i++) d.render(L, R, 128);
   const extra = on - off; line('32 modal voices, deaf muffle ON', on); out.push(`  deaf muffle costs ${(extra * 1000).toFixed(1)} us/block (bypassed: 0)`); if (extra > .02) { fails++; out.push('  FAIL muffle cost'); } }
-console.log(out.join('\n')); console.log(fails ? `FAIL ${fails}` : 'DSP_OK');
+console.log(out.join('\n')); // F8 audio budget: a burst of 24 synth notes in one block is spread (<= per starts a block) and every note still starts within a few blocks
+{ reset(); d.msg({ t: 'budget', o: { on: true } }); play(24, 'inst');
+  const s0 = d.stats ? d.stats() : null; for (let i = 0; i < 12; i++) d.render(L, R, 128); const s1 = d.stats ? d.stats() : null;
+  console.log(`budget: burst of 24 -> spread ${s1 && s1.spread}, still waiting after 12 blocks ${s1 && s1.defer}`); if (s1 && (s1.defer > 0)) { console.log('FAIL budget left notes waiting'); fails++; } d.msg({ t: 'budget', o: { on: false } }); }
+console.log(fails ? `FAIL ${fails}` : 'DSP_OK');

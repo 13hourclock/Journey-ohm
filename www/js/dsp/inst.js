@@ -111,5 +111,11 @@ export function InstFactory(SR, FX) {
       if (fade <= 0 || (v.rel && envA < 1e-4) || !isFinite(s1)) { v.on = 0; v.fading = 0; }
     } return act; }
   function lv(o) { for (const v of V) if (v.on) o[v.src] = (o[v.src] || 0) + v.envA * v.gain * v.fade * 3; if (TR) TR.lv(o); }
-  return { render, msg, feed, lv, stats: () => ({ act: V.reduce((a, v) => a + v.on, 0), stolen, tract: TR ? TR.stats().act : 0 }), NI };
+  // AUDIO BUDGET (board F8; dsp.js decides the cap from load): fewer simultaneous synth voices when the worklet is busy; the QUIETEST sound loses,
+  // the new note or a playing one (far / soft ohms drop first, near and loud ones keep playing). Released voices fade (no click).
+  let dropped = 0, budgetShed = 0;
+  function budget(cap, gain) { let act = 0, q = null, qe = 1e9; for (const v of V) if (v.on && !v.rel && !v.fading) { act++; const e = (v.gain || .1) * (v.envA || .001); if (e < qe) { qe = e; q = v; } }
+    if (act < cap) return true; if (q && (gain || .1) * .5 <= qe) { dropped++; return false; }   // the new note is the quietest: skip it
+    while (act >= cap && q) { q.dur = q.t; budgetShed++; act--; q = null; qe = 1e9; for (const v of V) if (v.on && !v.rel && !v.fading && v.t < v.dur) { const e = (v.gain || .1) * (v.envA || .001); if (e < qe) { qe = e; q = v; } } } return true; }
+  return { render, msg, feed, lv, budget, stats: () => ({ act: V.reduce((a, v) => a + v.on, 0), stolen, dropped, budgetShed, tract: TR ? TR.stats().act : 0 }), NI };
 }
