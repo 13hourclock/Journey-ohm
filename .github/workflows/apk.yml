@@ -13,6 +13,9 @@ on:
     branches: [master, main]
   workflow_dispatch:
 
+permissions:
+  contents: write   # lets the build publish the APK to the 'latest-build' release (one fixed phone download link)
+
 jobs:
   apk:
     runs-on: ubuntu-24.04   # pinned: ubuntu-latest moved to Ubuntu 26 on Oct 19 2026 and the SDK setup action failed there
@@ -70,6 +73,16 @@ jobs:
           mkdir out
           cp android/app/build/outputs/apk/debug/app-debug.apk out/JourneyOhm-v$V-debug.apk
           [ -f android/app/build/outputs/apk/release/JourneyOhm-release.apk ] && cp android/app/build/outputs/apk/release/JourneyOhm-release.apk out/JourneyOhm-v$V.apk || true
+      - name: Publish to the fixed download link (release 'latest-build')
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp out/*-debug.apk out/JourneyOhm-latest-debug.apk
+          [ -f out/JourneyOhm-v*[0-9].apk ] && cp out/JourneyOhm-v*[0-9].apk out/JourneyOhm-latest.apk || true
+          gh release delete latest-build -y --cleanup-tag 2>/dev/null || true
+          gh release create latest-build out/*.apk --target "$GITHUB_SHA" --title "Latest build ($(date -u +'%Y-%m-%d %H:%M') UTC, ${GITHUB_SHA::7})" \
+            --notes "Built automatically from main. Phone: tap JourneyOhm-latest-debug.apk to download and install. Debug-signed: uninstall a differently signed Journey Ohm first."
       - uses: actions/upload-artifact@v4
         with:
           name: journey-ohm-apk
