@@ -203,6 +203,12 @@ systems.switches.push({ k: 'learnSolo', label: 'TASTE (Q10 / Q182): a fully lear
 const conduct = createConduct({ sim, bus, music, size: () => render.size(), toScreen: (W, H, c, x, y) => toScreen(W, H, c, x, y) }); systems.conduct = conduct; sim.conductOwns = conduct.owns; conduct.attach(canvas);
 systems.switches.push({ k: 'conduct', label: 'conducting: baton up = ohms in view watch you and wait; beats set tempo (upstroke = upbeat), hand height = loudness, a stroke through an ohm cues it, flick down = cut off', get: () => conduct.opts.on, set: v => { conduct.opts.on = !!v; if (!v) conduct.release('off'); }, info: () => `${conduct.raises} raised, ${conduct.beats} beats, ${conduct.tempos} tempo changes, ${conduct.cues} cues, ${conduct.cuts} cut-offs` });
 systems.switches.push({ k: 'conductGesture', label: 'CLASH: two fingers resting still on bare ground raise the baton (takes that hold from "shape the ground with your voice"; a 3rd finger conducts) (off)', get: () => conduct.opts.gesture, set: v => { conduct.opts.gesture = !!v; } });
+// Wilbow Oct 28 2026, 9:28 PM: "Go with recs" (claude/JourneyOhm_decisions_2026-10-28.md). New defaults; every switch still toggles in the dev panel.
+{ const D = { windRocks: true, lightPlay: true, skyMood: true, critters: true, eggWords: true, clay: false, jamView: true, bubbleCatch: true, conductGesture: true };
+  for (const w of systems.switches) if (w.k in D && w.set) { try { w.set(D[w.k]); } catch (e) { console.warn('default', w.k, e); } }
+  Object.assign(skyMood.opts, { nightVel: .15, nightLow: .85, rainThin: .2 });   // #417 "slightly": half the gentle preset
+  conduct.opts.near = (x, y) => { const { W, H } = render.size(); for (const X of jamView.groups()) for (const m of X.members) { if (!m.body) continue; const s = toScreen(W, H, sim.cam, m.body.x, m.body.y); if (Math.hypot(x - s.x, y - s.y) < 180) return true; } return false; };   // #413 A
+}
 const craze = createCraze({ sim, bus, music, songs: systems.songs }); systems.craze = craze;
 { const sl0 = sim.shapeLean; sim.shapeLean = (P, turn, tn) => craze.borrow(P, turn, tn) || (sl0 ? sl0(P, turn, tn) : null); }
 systems.switches.push({ k: 'craze', label: 'traditions: a tune that catches spreads ohm to ohm as a craze; once enough ohms play it, it is the place\'s tradition', get: () => craze.opts.on, set: v => { craze.opts.on = !!v; }, info: () => `${craze.list.length} crazes, ${craze.catches} caught it, ${craze.plays} plays, ${craze.trads} became tradition` });
