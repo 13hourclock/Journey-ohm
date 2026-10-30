@@ -9,6 +9,12 @@ Applies to every Claude chat, Grok and any other AI. Saving tokens must never me
 3. **Build only DECIDED items** (BOARD.md). Unsure = ask in one line, don't guess. Guessing causes rework, the biggest waste.
 4. **Stop rule.** If a fix fails twice, stop and report; no loops. No chasing tool warnings that turn out to be false alarms.
 
+## Session names (Wilbow 12:11 AM Oct 30: reference sessions later instead of relying on summaries)
+Every AI session gets an ID: **`JO-<YYYYMMDD>-<NN>-<who>-<item>`** (date it started in MDT, the day's running number, `claude` / `grok`, the main board item), e.g. `JO-20261030-01-claude-O4`.
+- Rename the chat to the ID first thing (Wilbow can rename it in the app if the AI can't).
+- The ID and the chat's own link go in docs/SESSION_LOG.md; commits carry `Session: <ID>` plus the chat link (Claude commits already end with `Claude-Session: <link>`).
+- Need the detail later? Open the session by its link from the log: the full conversation, not a summary.
+
 ## Checks: cheapest first, stop when one answers the question
 1. Syntax check of touched files (`node --check`).
 2. The 1-3 node tests for the area you touched (`node tests/<area>_test.mjs`).
@@ -37,5 +43,5 @@ A GitHub check (.github/workflows/board-check.yml) fails any pull request that c
 - Merging to main builds the APK: don't build APKs locally.
 
 ## Cheap metrics (one line per session in docs/SESSION_LOG.md)
-`date | AI | board item | outcome (merged / waiting / stopped) | rework? (y/n: redid something already "done") | chat turns (about)`
+`session ID | chat link | board items | outcome (merged / waiting / stopped) | rework? (y/n: redid something already "done") | chat turns (about)`
 Rework and turns per item are the numbers to watch; if either climbs, the next session starts with a smaller task or a clarifying question.
