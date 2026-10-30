@@ -4,6 +4,24 @@ This is the summary Wilbow worked through with Resonance, copied from the Curren
 
 ---
 
+## Update: music wave 2, guest accent, body plans, walking legs, chromatic chords, status board (Oct 29 2026, Claude)
+
+Approved by Wilbow 10:12 PM MDT Oct 29 ("Do all, keep discussion going"). Merged to main on GitHub (13hourclock/Journey-ohm) as PRs #1-#6. No version bump, no APK from Claude: the GitHub Actions workflow (.github/workflows/apk.yml) builds a debug APK on every push to main. **BOARD.md** is now the status layer: read it first.
+
+### What's new, in play terms (each behind a dev switch; off = as before)
+- **Oct 28 decisions now load** (PR #1): the "Go with recs" files had been uploaded to the repo root; moved into www/js. New defaults ON (wind rocks, lenses, sky mood gentle, critters, egg words, jam view, bubble catch with hold-to-set-down, conducting near a jam); clay OFF.
+- **21 more traditions** (PR #3, switch traditions: wave 2): jazz, blues, funk, Carnatic, Turkish makam, Persian dastgah, Chinese, Cuban son, rumba, samba, bossa nova, flamenco, Balkan aksak, Andean, overtone, reggae/dub, drum & bass, minimal, classical, modal, rock/pop, from docs/TRADITION_REFERENCE.md: real scales (microtonal where real), 16 new rhythm cycles, fixed chord charts (12-bar blues, ii-V-I AABA, Andalusian cadence...), 7th chords. Planets now pick from 29 (the land leans which).
+- **Real chromatic chords** (PR #6, switch chromatic chords): blues V7, flamenco III, samba VI7 sound as the real chords (steps raised / lowered while they play).
+- **Guest accent** (PR #3, switch guestAccent): an ohm carried to another planet keeps its home tradition; in a host jam it leans its weak notes to its home focus notes, adds its home grace notes and rests like home, always in the host key / tuning / tempo / cycle. Each first meeting of two traditions posts 'trad.meet' (the hook for later outcomes). Home tradition is saved.
+- **Song chord fit** (PR #3, switch strongSnap): a song's melody notes on strong beats move to the bar's chord (the hook was replayed unchanged over new chords). Carrier group on-beat fit 77-87%.
+- **Body plans from the first game** (PR #4, switch bodyPlans): blob, shell, serpent, strider, drum-belly, cluster, floater, chosen from the instrument (a hat bristles, a snare has beaded feelers, a pad trails fronds, a bass hangs a keel, a kick wears a band); gene outlines; 0-6 legs; serpent segments near you. Far ohms unchanged.
+- **Walking legs** (PR #5, switch walkLegs): near ohms step with their legs as they move.
+- **Music reference docs** copied from the first game into docs/: TRADITION_REFERENCE, MUSIC_OVERHAUL, MUSIC_THEORY, PATTERN_LIBRARY, V08_B7_VOICE_THEORY.
+
+### Still discussion (not built): see BOARD.md K1 (how the player changes the key), M4 (several song groups at once), M5 (what happens when traditions meet).
+
+---
+
 ## Release: v0.0.30 (versionCode 30) on Drive (Oct 26 2026, about 4:30 AM MDT, Game Dev)
 
 - **APK:** JourneyOhm-v0.0.30.apk, 4,158,238 bytes, sha256 82e135aebe9841fa..., signed with the lensure upload key (cert db171c70...dc7d1f), appId com.lensure.journeyohm, versionCode 30 / 0.0.30. Drive "Resonance overnight": https://drive.google.com/file/d/1En5YUSvaFckmdao7xfoZbYxt1uhy3xNb/view?usp=drivesdk
