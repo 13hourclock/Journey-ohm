@@ -11,7 +11,7 @@
 import { rng } from './rng.js';
 import { PALETTE } from './palette_data.js';
 import { ROLE } from './drums.js';
-export const BODY_PLAN = { on: true, harmK: 1, maxK: 1.45, minK: .62, walk: true, stepK: 2.4, swing: .2, lift: .1 };   // walk: live stepping legs on near ohms (O2, Wilbow 10:12 PM Oct 29 'Do all')
+export const BODY_PLAN = { on: true, harmK: 1, maxK: 1.45, minK: .62, walk: true, stepK: 2.4, swing: .2, lift: .1, low: true };   // low: body shapes survive low detail (Wilbow 10:52 PM Oct 29 'I saw it change to basic spheres'; switch lowShapes)   // walk: live stepping legs on near ohms (O2, Wilbow 10:12 PM Oct 29 'Do all')
 export const PLANS = ['blob', 'shell', 'serpent', 'strider', 'drum-belly', 'cluster', 'floater'];
 const TAU = Math.PI * 2, cl = (v, a, b) => Math.max(a, Math.min(b, v));
 // what the voice looks like (old B.look): drum role, sustain, range
