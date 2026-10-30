@@ -4,6 +4,10 @@ This is the summary Wilbow worked through with Resonance, copied from the Curren
 
 ---
 
+## Approved, not built yet: jam trees (Oct 30 2026, 12:53 PM MDT, Claude)
+
+Wilbow: "Approved for integration in to the build next pass". BOARD.md W2-W5: strong jams grow trees shaped by the song (geometry-generated, never stamped, blooms, many colours); trees thicken with every jam and ohm visit and show growth rings; you drift-zoom into a tree to see and hear the jam up close; ohms gain experience there. Look samples: docs/concepts/jam_trees/tree_previews.png. Behind switch jamTrees when built.
+
 ## Update: music wave 2, guest accent, body plans, walking legs, chromatic chords, status board (Oct 29 2026, Claude)
 
 Approved by Wilbow 10:12 PM MDT Oct 29 ("Do all, keep discussion going"). Merged to main on GitHub (13hourclock/Journey-ohm) as PRs #1-#6. No version bump, no APK from Claude: the GitHub Actions workflow (.github/workflows/apk.yml) builds a debug APK on every push to main. **BOARD.md** is now the status layer: read it first.
