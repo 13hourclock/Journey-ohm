@@ -17,6 +17,11 @@ export function createSim(music, bus) {
   const S = { sources: [], byId: new Map(), ohms: [], ohm: null, sig: { global: {} }, opts: OPTS, music, lod: 0, stats: { ms: 0, awake: 0, hits: 0 } };
   // world frame (world units = R px of the layout; origin = the layout's rest point). Set from the screen by setView; the world
   // track may own these (Shared contracts): S.bounds, S.groundAt(x) -> ground y, S.cam { x, y, z }.
+  // F11 (Wilbow 5:18 PM Oct 30 "The ohms are getting piled up in the view area and bouncing off eachother"): the ground strip is
+  // one screen wide, so once the ground ohms' widths add up past it they stack and shove forever (14 ohms: 13.7 units of bodies on a
+  // 7.7 unit floor, never calm). S.crowd ON: soft resting contacts (slow touches don't bounce, ring or strike) and, while the floor is
+  // more than opts.full taken, the newest ground ohms hover in a band above it until room comes back. OFF = exactly as before.
+  S.crowd = { on: true, full: .8, free: .65, slow: .8, lifted: 0, fill: 0 };
   S.bounds = { x0: -3.8, x1: 3.8, y0: -5.5, ground: 7.5 }; S.groundAt = null; S.cam = { x: 0, y: 0, z: 1 };
   const groundY = x => S.groundAt ? S.groundAt(x) : S.bounds.ground;
   S.setView = (W, H) => { const R = Math.min(W, H) * .13, cx0 = W / 2, cy0 = H * .36; S.bounds.x0 = -cx0 / R; S.bounds.x1 = (W - cx0) / R; S.bounds.y0 = -cy0 / R; S.bounds.ground = (H * .9 - cy0) / R;
@@ -110,11 +115,12 @@ export function createSim(music, bus) {
     const vx0 = b.vx, vy0 = b.vy;
     if (held) { if (!b.grab) { b.grab = { x: b.x, y: b.y }; b.flying = false; } b.vx += ((gx - b.x) * 260 - b.vx * 22) * h; b.vy += ((gy - b.y) * 260 - b.vy * 22) * h; b.calm = 0; }
     else { if (b.grab) { b.grab = null; const sp = Math.hypot(b.vx, b.vy); if (sp > 1.2) b.flying = true; else b.homeY = b.y; if (sp > CALL_V) hit(o, sp * .8, t); }   // PROPOSAL (OHMS C21, a sound event only; changes nothing lasting): a hard throw calls out. THROW: let go and it keeps the finger's speed
-      if (g.float && !b.flying) { b.vy += ((b.homeY - b.y) * 3 - b.vy * 2.2) * h; } else if (!g.float) b.vy += GRAV * h;
-      const drag = g.float ? 1.4 : .25; b.vx *= Math.exp(-h * drag); if (g.float) b.vy *= Math.exp(-h * drag);
+      const fl = g.float || o.lift;   // F11: a lifted ohm hovers like a floater until the floor has room
+      if (fl && !b.flying) { b.vy += ((b.homeY - b.y) * 3 - b.vy * 2.2) * h; } else if (!fl) b.vy += GRAV * h;
+      const drag = fl ? 1.4 : .25; b.vx *= Math.exp(-h * drag); if (fl) b.vy *= Math.exp(-h * drag);
       // calm partner seek (PROPOSAL): settled ohms drift slowly toward their partner and stop at a comfortable distance
       const p = b.partner; if (p && o !== S.ohm && !o.anchor && !b.flying && b.calm > 1.5) { const dx = p.body.x - b.x, dy = p.body.y - b.y, d = Math.hypot(dx, dy) || 1, want = (g.r + p.g.r) * 1.25;
-        if (d > want * 1.05) { const vmax = .1 + .25 * (1 - g.calm), a = g.social * 1.2; if (Math.abs(b.vx) < vmax) b.vx += dx / d * a * h; if (g.float && Math.abs(b.vy) < vmax) { b.vy += dy / d * a * h; b.homeY = b.y; } } } }
+        if (d > want * 1.05) { const vmax = .1 + .25 * (1 - g.calm), a = g.social * 1.2; if (Math.abs(b.vx) < vmax) b.vx += dx / d * a * h; if (g.float && !o.lift && Math.abs(b.vy) < vmax) { b.vy += dy / d * a * h; b.homeY = b.y; } } } }
     const sp2 = b.vx * b.vx + b.vy * b.vy; if (sp2 > MAXV * MAXV) { const k = MAXV / Math.sqrt(sp2); b.vx *= k; b.vy *= k; }
     b.x += b.vx * h; b.y += b.vy * h;
     // world edges + ground (soft bounce; harder landings sound)
@@ -140,14 +146,25 @@ export function createSim(music, bus) {
     for (let i = 0; i < n; i++) { const a = order[i], A = a.body; for (let j = i + 1; j < n; j++) { const c = order[j]; if (a.parked || c.parked) continue; const Cb = c.body, rr = a.g.r + c.g.r, dx = Cb.x - A.x; if (dx > rr + .4) { if (dx > 1.6) break; continue; }
       const dy = Cb.y - A.y, d2 = dx * dx + dy * dy; if (d2 >= rr * rr) continue; const d = Math.sqrt(d2) || 1e-3, nx = dx / d, ny = dy / d, ov = rr - d, ia = 1 / a.g.mass, ic = 1 / c.g.mass, s = ov / (ia + ic) * .8;
       A.x -= nx * s * ia; A.y -= ny * s * ia; Cb.x += nx * s * ic; Cb.y += ny * s * ic;
-      const vn = (Cb.vx - A.vx) * nx + (Cb.vy - A.vy) * ny; if (vn < 0) { const jj = -1.3 * vn / (ia + ic); A.vx -= nx * jj * ia; A.vy -= ny * jj * ia; Cb.vx += nx * jj * ic; Cb.vy += ny * jj * ic;
+      const vn = (Cb.vx - A.vx) * nx + (Cb.vy - A.vy) * ny, soft = S.crowd.on && -vn < S.crowd.slow;
+      if (soft) { if (vn < 0) { const jj = -vn / (ia + ic); A.vx -= nx * jj * ia; A.vy -= ny * jj * ia; Cb.vx += nx * jj * ic; Cb.vy += ny * jj * ic; }   // F11: a slow touch just stops (no bounce, no ring, no strike)
+        if (!A.grab && !Cb.grab) { const tx = -ny, ty = nx, vt = (Cb.vx - A.vx) * tx + (Cb.vy - A.vy) * ty, f = vt * .25 / (ia + ic); A.vx += tx * f * ia; A.vy += ty * f * ia; Cb.vx -= tx * f * ic; Cb.vy -= ty * f * ic; } continue; }   // and rubs to rest instead of sliding round each other
+      if (vn < 0) { const jj = -1.3 * vn / (ia + ic); A.vx -= nx * jj * ia; A.vy -= ny * jj * ia; Cb.vx += nx * jj * ic; Cb.vy += ny * jj * ic;
         kick(a, nx, ny, -vn * .5, false); kick(c, -nx, -ny, -vn * .5, false); if (-vn > 1.8) { hit(a, -vn, t); hit(c, -vn, t); } } } } };
+  const crowdTick = () => { const C = S.crowd, B = S.bounds, floor = Math.max(1, B.x1 - B.x0), O = S.ohms;
+    if (!C.on) { if (C.lifted) for (const o of O) if (o.lift) { o.lift = false; o.body.homeY = o.body.y; } C.lifted = 0; return; }
+    let w = 0, lw = 0; const lifted = [], ground = []; for (const o of O) { if (o.parked || o.dead || !o.g || o.g.float) continue; if (o.lift) { lifted.push(o); lw += 2 * o.g.r; } else { w += 2 * o.g.r; if (o !== S.ohm && !o.anchor && !o.body.grab) ground.push(o); } }
+    C.fill = w / floor;
+    if (C.fill > C.full && ground.length) { ground.sort((a, b) => b.id - a.id); const o = ground[0], b = o.body; o.lift = true; b.homeY = groundY(b.x) - o.g.r - 1.4 - (lifted.length % 3) * 1.1; b.vy -= 2; b.calm = 0; }   // the newest ground ohm rises into the hover band
+    else if (lifted.length) { lifted.sort((a, b) => a.id - b.id); const o = lifted[0]; if ((w + 2 * o.g.r) / floor < C.free && !o.body.grab) { o.lift = false; o.body.calm = 0; } }   // room again: the oldest lifted ohm settles back down
+    C.lifted = O.filter(o => o.lift).length; };
   S.step = dt => { const a0 = performance.now(), t = music.now(), ph = music.phase(t);
     post('global', 'beat.phase', ph); post('global', 'beat.pulse', Math.exp(-ph * 6)); post('global', 'bar.phase', (music.bar(t) % 1 + 1) % 1); post('global', 'key.tonic', (music.tonicHz - 32) / 96);
     for (const o of S.sources) if (o.scale !== 'ohm') { o.glow *= Math.exp(-dt * 2.2); o.ring *= Math.exp(-dt * 3); }
     const n = Math.max(1, Math.ceil(dt / .017)), h = dt / n, O = S.ohms; tickN++;
     const jamOn = !!(S.opts.jam && S.opts.jam.on); for (const o of O) o.parked = (o.id === 2 && !jamOn) || !!o.away;   // the jam partner sits out while jam is off; v0.0.11 (world, additive): ohms living on another planet sleep (o.away)
     for (let k = 0; k < n; k++) { for (const o of O) if (!o.parked) physics(o, h, t); collide(t); }
+    if (tickN % 30 === 0) crowdTick();
     for (const th of S.things) th.hit *= Math.exp(-dt * 5);
     let sleepy = false;
     for (let i = 0; i < O.length; i++) { const o = O[i], b = o.body;
