@@ -68,10 +68,12 @@ says **which category each item is in**.
 | F6 | Tech | The automatic APK build failed on every run since Oct 27 (Android SDK setup step); runner pinned to ubuntu-24.04, preinstalled SDK used | fixed, PR #8 |
 | F7 | Ohms | On a busy phone every ohm became a plain circle (the lowest detail rung skipped all body shapes); now ohms keep their real outline, the nearest 4 keep their full body, legs and features, the focus ohm keeps walking legs | fixed, PR #9, switch lowShapes |
 | F8 | Music | Audio static on the phone: crackles come from bursts (many ohms starting notes in the same instant at bar lines; single audio blocks spiked to 4-9x their time budget), worse on busy planets; present before Oct 29 too. Now: note starts spread over a few ms (at most 3 per audio block), and when busy, fewer synth voices at once with the quietest (far / soft) dropping first; your own taps are never dropped. At 4x CPU slowdown: 45% fewer missed audio deadlines (853 -> 477 over 6 paired runs) | improved, PR #10, switch audioBudget; not gone: needs a phone check |
+| F9 | Tech | Every GitHub build had a new random signing key, so each one needed an uninstall; now one shared test key signs every debug build and the version number goes up each build, so new builds install as updates | fixed, PR #13 (one last uninstall after it) |
 | F4 | Tech | tests/look_claim_test fails (already failing before Oct 29); tests/shape_test timing checks fail on a busy machine | open |
 
 ## 6. Housekeeping
 
 | ID | What | Status |
 |---|---|---|
+| T2 | Release signing with the lensure key (builds also update over Grok's old installs; needed for the Play Store) | for Grok when usage is back: see GROK_HANDOFF.md section 0 |
 | H1 | Make the GitHub repo private | Wilbow to do it (Claude cannot change repo settings): Settings -> Danger Zone -> Change visibility. Grok loses access to a private repo unless added. |

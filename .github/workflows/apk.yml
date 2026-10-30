@@ -50,7 +50,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew   # uploads through the GitHub website drop the executable bit
-          ./gradlew --no-daemon assembleDebug
+          ./gradlew --no-daemon assembleDebug -PbuildNum=${{ github.run_number }}
       - name: Signed release APK (only if keystore secrets are set)
         if: ${{ env.KS != '' }}
         env:
@@ -60,7 +60,7 @@ jobs:
         working-directory: android
         run: |
           echo "$KS" | base64 -d > "$RUNNER_TEMP/release.jks"
-          ./gradlew --no-daemon assembleRelease
+          ./gradlew --no-daemon assembleRelease -PbuildNum=${{ github.run_number }}
           BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
           U=app/build/outputs/apk/release/app-release-unsigned.apk
           $BT/zipalign -f -p 4 $U app/build/outputs/apk/release/aligned.apk

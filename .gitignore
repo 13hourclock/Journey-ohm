@@ -29,3 +29,6 @@ android/app/src/main/assets/public/
 *.idsig
 node_modules/
 .DS_Store
+
+# The shared TEST signing key (not a release key): every build installs as an update on the phone (Wilbow 11:39 PM Oct 29). Release keys never go in the repo.
+!android/keystores/journeyohm-test.keystore
