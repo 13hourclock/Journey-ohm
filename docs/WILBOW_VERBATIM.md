@@ -1870,3 +1870,4 @@ In order"  [CANCELS the ~3:16 PM voice-call entries above on Q350, Q351/352 and 
 - Oct 30 2026, 12:39 PM MDT (Claude chat): "Maybe some preview shots of possible looks for fully bloomed trees"
 - Oct 30 2026, 12:50 PM MDT (Claude chat): "These look great, perhaps more color variation per tree in the final game.  The trees should grow thicker and more complex with ohm interactions and jams"
 - Oct 30 2026, 12:53 PM MDT (Claude chat): "Growth rings being viewable is great and I like the other ideas. Approved for integration in to the build next pass"
+- Oct 30 2026, about 1:05 PM MDT (Claude chat, cards): tree drawing = "Yes, that mix (Recommended)"; ohm learning = "Both, play counts more (Recommended)"; seed editing = "Deep like the synth"; scope of the 12:53 PM approval = "All of it" (trees, instrument layer, emergent genres, soft guardrails).

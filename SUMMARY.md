@@ -6,7 +6,7 @@ This is the summary Wilbow worked through with Resonance, copied from the Curren
 
 ## Approved, not built yet: jam trees (Oct 30 2026, 12:53 PM MDT, Claude)
 
-Wilbow: "Approved for integration in to the build next pass". BOARD.md W2-W5: strong jams grow trees shaped by the song (geometry-generated, never stamped, blooms, many colours); trees thicken with every jam and ohm visit and show growth rings; you drift-zoom into a tree to see and hear the jam up close; ohms gain experience there. Look samples: docs/concepts/jam_trees/tree_previews.png. Behind switch jamTrees when built.
+Wilbow: "Approved for integration in to the build next pass". BOARD.md W2-W5: strong jams grow trees shaped by the song (geometry-generated, never stamped, blooms, many colours); trees thicken with every jam and ohm visit and show growth rings; you drift-zoom into a tree to see and hear the jam up close; ohms gain experience there. Look samples: docs/concepts/jam_trees/tree_previews.png. Behind switch jamTrees when built. ~1:05 PM cards: also approved for next pass: tree drawing method (W6), deep-edit pollinated seeds (W7), instruments as their own layer (I1), emergent genres (I2), soft guardrails (X4).
 
 ## Update: music wave 2, guest accent, body plans, walking legs, chromatic chords, status board (Oct 29 2026, Claude)
 
