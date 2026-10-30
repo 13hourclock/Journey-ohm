@@ -67,7 +67,7 @@ says **which category each item is in**.
 | F5 | Music | Samba iv and the jazz bridge (ii/IV, V/V) are still diatonic stand-ins (F3 covers blues V7, flamenco III, samba VI7) | open (ask first) |
 | F6 | Tech | The automatic APK build failed on every run since Oct 27 (Android SDK setup step); runner pinned to ubuntu-24.04, preinstalled SDK used | fixed, PR #8 |
 | F7 | Ohms | On a busy phone every ohm became a plain circle (the lowest detail rung skipped all body shapes); now ohms keep their real outline, the nearest 4 keep their full body, legs and features, the focus ohm keeps walking legs | fixed, PR #9, switch lowShapes |
-| F8 | Music | Audio static on the phone: the sound engine falls behind when many notes play at once (8-17 notes/s depending on how many jams form); present before Oct 29 too. Needs a stronger audio budget (fewer simultaneous voices when busy) | open, next |
+| F8 | Music | Audio static on the phone: crackles come from bursts (many ohms starting notes in the same instant at bar lines; single audio blocks spiked to 4-9x their time budget), worse on busy planets; present before Oct 29 too. Now: note starts spread over a few ms (at most 3 per audio block), and when busy, fewer synth voices at once with the quietest (far / soft) dropping first; your own taps are never dropped. At 4x CPU slowdown: 45% fewer missed audio deadlines (853 -> 477 over 6 paired runs) | improved, PR #10, switch audioBudget; not gone: needs a phone check |
 | F4 | Tech | tests/look_claim_test fails (already failing before Oct 29); tests/shape_test timing checks fail on a busy machine | open |
 
 ## 6. Housekeeping
