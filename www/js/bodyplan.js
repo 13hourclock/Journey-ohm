@@ -11,7 +11,7 @@
 import { rng } from './rng.js';
 import { PALETTE } from './palette_data.js';
 import { ROLE } from './drums.js';
-export const BODY_PLAN = { on: true, harmK: 1, maxK: 1.45, minK: .62, walk: true, stepK: 2.4, swing: .2, lift: .1, low: true };   // low: body shapes survive low detail (Wilbow 10:52 PM Oct 29 'I saw it change to basic spheres'; switch lowShapes)   // walk: live stepping legs on near ohms (O2, Wilbow 10:12 PM Oct 29 'Do all')
+export const BODY_PLAN = { on: true, harmK: 1, maxK: 1.45, minK: .62, variety: true, harmV: 1.7, maxV: 1.62, minV: .5, walk: true, stepK: 2.4, swing: .2, lift: .1, low: true };   // low: body shapes survive low detail (Wilbow 10:52 PM Oct 29 'I saw it change to basic spheres'; switch lowShapes)   // walk: live stepping legs on near ohms (O2, Wilbow 10:12 PM Oct 29 'Do all')
 export const PLANS = ['blob', 'shell', 'serpent', 'strider', 'drum-belly', 'cluster', 'floater'];
 const TAU = Math.PI * 2, cl = (v, a, b) => Math.max(a, Math.min(b, v));
 // what the voice looks like (old B.look): drum role, sustain, range
@@ -53,13 +53,13 @@ export function planOf(seed, rec, g) { const r = rng(((seed >>> 0) ^ 0x6b0d1e5) 
   return { plan, look, app, radial: P.radial, symN: P.symN, harm: P.harm, headBulge: P.headBulge, segments: P.segments, segTaper: .62 + r() * .3, legs, legLen: plan === 'strider' ? P.limbLen : 1,
     aspect: plan === 'serpent' ? Math.min(g.aspect, .85) : plan === 'drum-belly' ? .9 + (g.aspect - .6) * .2 : plan === 'shell' ? Math.max(g.aspect, 1.05) : g.aspect }; }
 // apply to body genes (genes.js bodyGenes): g.plan + the plan's aspect / legs; off = untouched
-export function applyPlan(g, seed, rec) { if (!BODY_PLAN.on) { g.plan = null; return g; } const p = planOf(seed, rec, g); g.plan = p; g.aspect = p.aspect; g.legs = p.legs; g.legLen = p.legLen; g._ext = 0; return g; }
+export function applyPlan(g, seed, rec) { g.pat = BODY_PLAN.variety ? patOf(seed) : null; if (!BODY_PLAN.on) { g.plan = null; return g; } const p = planOf(seed, rec, g); g.plan = p; g.aspect = p.aspect; g.legs = p.legs; g.legLen = p.legLen; g._ext = 0; return g; }
 // the outline: radius multiplier at angle a (screen y down; the head is up, bilateral symmetry about the vertical axis)
 export function shapeK(g, a) { let k = 1 + (g.lobeAmt || 0) * Math.cos((g.lobes || 0) * a + (g.lobePh || 0)); const p = g.plan; if (!p) return k;
   const u = a + Math.PI / 2;   // 0 at the top
-  for (let i = 0; i < p.harm.length; i++) { const h = p.harm[i], m = p.radial ? (i + 1) * p.symN : i + 2; k += h.a * BODY_PLAN.harmK * (p.radial ? Math.cos(m * u + h.ph) : Math.cos(m * u) * (i % 2 ? .6 : 1)); }
+  for (let i = 0; i < p.harm.length; i++) { const h = p.harm[i], m = p.radial ? (i + 1) * p.symN : i + 2; k += h.a * (BODY_PLAN.variety ? BODY_PLAN.harmV : BODY_PLAN.harmK) * (p.radial ? Math.cos(m * u + h.ph) : Math.cos(m * u) * (i % 2 ? .6 : 1)); }
   k += p.headBulge * Math.max(0, -Math.sin(a)) * .5;
-  return cl(k, BODY_PLAN.minK, BODY_PLAN.maxK); }
+  return BODY_PLAN.variety ? cl(k, BODY_PLAN.minV, BODY_PLAN.maxV) : cl(k, BODY_PLAN.minK, BODY_PLAN.maxK); }
 // largest outline radius (cached per genes) - the sprite's room
 export function extentK(g) { if (g._ext) return g._ext; let m = 0; for (let i = 0; i < 48; i++) m = Math.max(m, shapeK(g, i / 48 * TAU)); return (g._ext = m); }
 // extra room the appendages need around the body, in body radii
@@ -115,3 +115,22 @@ export function drawWalkLegs(ctx, g, s, b, x, y, rr, ymaxPx, C, rgba, dt) { cons
       fx = fx0 + Math.sin(ph) * rr * BODY_PLAN.swing * LL * m * dir, fy = fy0 - Math.max(0, Math.cos(ph)) * rr * BODY_PLAN.lift * LL * m, wt = rr * .085 / Math.sqrt(LL), wb = rr * .06 / Math.sqrt(LL);
     ctx.fillStyle = rgba(j % 2 ? C.deep : C.base, 1); ctx.beginPath(); ctx.moveTo(hx - wt, hy); ctx.lineTo(hx + wt, hy); ctx.lineTo(fx + wb, fy); ctx.lineTo(fx - wb, fy); ctx.closePath(); ctx.fill();
     ctx.fillStyle = rgba(C.deep, 1); ctx.beginPath(); ctx.ellipse(fx + sx * rr * .03, fy, rr * .1, rr * .055, 0, 0, Math.PI * 2); ctx.fill(); } }
+
+// VARIETY (first game's colour & pattern genes, genome.js 32-43; Wilbow 9:24 PM / 10:52 PM Oct 29 "never having nearly as much diversity as
+// the last game", "All ok" 11:08 PM). Every ohm is born with its own skin: a pattern (spots, stripes, rings, patches or plain), its scale and
+// angle, a second colour (the old second wavelength), contrast, see-through skin for a few, an inner glow for some. Muted (Oct 25: "too
+// much color"). Baked into the body sprite once (no per-frame cost). Switch BODY_PLAN.variety (dev 'ohmVariety'); off = as before.
+export const PATTERNS = ['plain', 'spots', 'stripes', 'rings', 'patches'];
+export function patOf(seed) { const r = rng(((seed >>> 0) ^ 0x2c7a91e3) >>> 0), u = r();
+  return { kind: u < .14 ? 'plain' : u < .4 ? 'spots' : u < .62 ? 'stripes' : u < .8 ? 'rings' : 'patches', scale: 2 + r() * 7, ang: r() * Math.PI, contrast: .25 + r() * .55,
+    dh: (r() < .5 ? -1 : 1) * (35 + r() * 130), n: 3 + Math.floor(r() * 9), clear: r() > .84 ? .25 + r() * .35 : 0, glow: r() > .7 ? .35 + r() * .5 : 0, sd: Math.floor(r() * 1e6) }; }
+// paint inside the body's clip (device px): C2 = the second colour [r, g, b]
+export function paintPattern(x, g, H, Rd, C, C2, rgba, xmax, ymax) { const p = g.pat; if (!p || p.kind === 'plain') return; const r = rng(p.sd >>> 0), a = p.contrast;
+  if (p.kind === 'spots') { const N = p.n + 3; for (let i = 0; i < N; i++) { const px = H + (r() * 2 - 1) * xmax * .9, py = H + (r() * 2 - 1) * ymax * .9, pr = Rd * (.06 + r() * .14) * (6 / p.scale + .4);
+      const gr = x.createRadialGradient(px, py, 0, px, py, pr); gr.addColorStop(0, rgba(C2, a)); gr.addColorStop(.7, rgba(C2, a * .8)); gr.addColorStop(1, rgba(C2, 0)); x.fillStyle = gr; x.fillRect(px - pr, py - pr, pr * 2, pr * 2); } }
+  else if (p.kind === 'stripes') { x.save(); x.translate(H, H); x.rotate(p.ang); const w = Rd * 2.4 / p.scale; for (let u = -Rd * 1.8; u < Rd * 1.8; u += w * 2) { const lg = x.createLinearGradient(u, 0, u + w, 0);
+      lg.addColorStop(0, rgba(C2, 0)); lg.addColorStop(.5, rgba(C2, a)); lg.addColorStop(1, rgba(C2, 0)); x.fillStyle = lg; x.fillRect(u, -Rd * 1.8, w, Rd * 3.6); } x.restore(); }
+  else if (p.kind === 'rings') { const cx = H + (r() - .5) * xmax * .4, cy = H + (r() - .5) * ymax * .4, w = Rd / p.scale * 1.6; for (let k = 1; k <= 4; k++) { const rr = k * w * 1.6, gr = x.createRadialGradient(cx, cy, Math.max(0, rr - w * .5), cx, cy, rr + w * .5);
+      gr.addColorStop(0, rgba(C2, 0)); gr.addColorStop(.5, rgba(C2, a * (1 - k * .12))); gr.addColorStop(1, rgba(C2, 0)); x.fillStyle = gr; x.fillRect(cx - rr - w, cy - rr - w, (rr + w) * 2, (rr + w) * 2); } }
+  else if (p.kind === 'patches') { const N = 2 + (p.n >> 2); for (let i = 0; i < N; i++) { const px = H + (r() * 2 - 1) * xmax * .7, py = H + (r() * 2 - 1) * ymax * .7, pr = Rd * (.3 + r() * .35);
+      const gr = x.createRadialGradient(px, py, pr * .35, px, py, pr); gr.addColorStop(0, rgba(C2, a * .9)); gr.addColorStop(1, rgba(C2, 0)); x.fillStyle = gr; x.fillRect(px - pr, py - pr, pr * 2, pr * 2); } } }
