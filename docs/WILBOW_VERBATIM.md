@@ -1876,3 +1876,4 @@ In order"  [CANCELS the ~3:16 PM voice-call entries above on Q350, Q351/352 and 
 - Oct 30 2026, 5:25 PM MDT (Claude chat, JO-20261030-03-claude-F11): "Continue development"
 - Oct 30 2026, about 5:27 PM MDT (cards): this chat = "F11 ohm pile-up (Recommended)"; G1 = "Yes, build G1 (Recommended)"
 - Oct 30 2026, 5:29 PM MDT (Claude chat): "Also I cant pickup ohms anymore"
+- Oct 30 2026, 5:34 PM MDT (Claude chat, about pickup vs the zoom / tree notes): "These aren't necessarily connected"
