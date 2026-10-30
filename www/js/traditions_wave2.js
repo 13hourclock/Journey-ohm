@@ -7,9 +7,8 @@
 //   song.charts: [{ sec: { A: [roots], B: [...] }, form?, end? }]  fixed progressions (scale-degree roots per bar); songs pick one by seed
 //   pull: n              tonic pull for drone traditions (overtone: one fundamental, never a chord change in practice)
 // Focus degrees are 7-slot indices (as wave 1). For 5-note scales, `fc` lists focus notes in CENTS and is turned into slots here.
-// ENGINE LIMITS (flagged, see docs/TRADITIONS_WAVE2.md): chords are built from the 7 scale slots, so non-diatonic chords are approximated -
-// blues V7 (no B natural in the blues scale: G Bb F shell), samba VI7 / iv (IV), flamenco III (the G natural is not in phrygian dominant:
-// the cadence is iv - II - I), jazz bridge (diatonic stand-ins for ii/IV and V/V). Tumbao anticipation, skank on 2 / 4 and walking bass are
+// CHROMATIC CHORDS (board F3): alts: { root slot: { slot: cents } } raise / lower scale steps while that chord sounds (traditions.js, switch
+// opts.chroma): blues V7, flamenco III, samba VI7 are real. Still diatonic stand-ins: samba iv (IV), the jazz bridge (ii/IV, V/V). Tumbao anticipation, skank on 2 / 4 and walking bass are
 // part behaviours, not data: not built here.
 const ET = c => c.map(x => x * 100), JI = [0, 112, 204, 316, 386, 498, 590, 702, 814, 884, 996, 1088], jiOf = s => s.map(x => JI[x]);
 const DIA = [0, 200, 400, 500, 700, 900, 1100];
@@ -46,7 +45,7 @@ export const WAVE2 = [
       charts: [{ sec: { A: [0, 5, 1, 4, 0, 5, 1, 4], B: [3, 3, 2, 5, 1, 1, 1, 4] } }, { sec: { A: [0, 0, 1, 4, 2, 5, 1, 4], B: [3, 3, 0, 0, 1, 1, 4, 4] } }] } },
   // 1.6 blues: 12 bars, dominant 7ths on 1 / 4 (V is a shell, flagged), shuffle, AAB lines
   { id: 'blues', name: 'Blues (12-bar)', pal: 'blues', aura: 'tracery', harm: 'move', glide: .35, dens: .9,
-    voicings: { 0: [0, 2, 4, 6], 3: [3, 5, 0, 1], 4: [4, 6, 3] },
+    voicings: { 0: [0, 2, 4, 6], 3: [3, 5, 0, 1], 4: [4, 6, 1, 3] }, alts: { 4: { 6: 100, 1: -100 } },   // F3: V7 = G B D F (Bb -> B, Eb -> D while it sounds)
     scales: [SC('blues (b3 + 3)', [0, 300, 400, 500, 700, 900, 1000], { focus: [0, 4, 2], w: [1, .8, 1, 1, 1, .7, 1] })],
     tempos: [['shuffle', 84, { cycle: 'shuffle' }], ['slow blues', 64, { cycle: 'shuffle' }]], swing: 1, tight: .75, div: 4,
     song: { form: ['A', 'A', 'A'], len: 12, bStart: 3, cad: [0], cells: [[1, .5, .5, 2], [1.5, .5, 1, 1], [.5, .5, 1, 2]], hookBars: 2, moves: 'functional',
@@ -96,7 +95,7 @@ export const WAVE2 = [
     song: { form: ['A', 'A', 'B', 'B', 'B'], len: 8, bStart: 4, cad: [4, 0], cells: [[1, .5, .5, 2], [.5, 1, .5, 2], [1.5, .5, 1, 1]], hookBars: 2, moves: 'functional',
       charts: [{ sec: { A: [0, 0, 4, 4, 4, 4, 0, 0], B: [0, 4, 0, 4] } }] } },
   // 1.19 samba: surdo on 2 of each 2/4, 4th-16th accent, refrão / verso (VI7 and iv are stand-ins, flagged)
-  { id: 'samba', name: 'Brazilian samba', pal: 'samba', aura: 'weave', harm: 'move', glide: 0, dens: 1.2, voicings: { 4: [4, 6, 1, 3] },
+  { id: 'samba', name: 'Brazilian samba', pal: 'samba', aura: 'weave', harm: 'move', glide: 0, dens: 1.2, voicings: { 4: [4, 6, 1, 3], 5: [5, 0, 2, 4] }, alts: { 5: { 0: 100 } },   // F3: VI7 = A C# E G (C -> C# while it sounds)
     scales: [SC('major', MAJ, { focus: [0, 4, 2] })],
     tempos: [['samba', 100, { cycle: 'samba' }], ['samba-enredo', 132, { cycle: 'samba' }]], swing: .15, tight: .9, div: 4,
     song: { form: ['A', 'B', 'A', 'B', 'A'], len: 8, bStart: 0, cad: [4, 0], cells: [[.75, .25, .5, .5, 2], [.25, .5, .25, 1, 2], [.5, .5, 1, 2]], hookBars: 2, moves: 'functional',
@@ -108,11 +107,11 @@ export const WAVE2 = [
     song: { form: ['A', 'A', 'B', 'A'], len: 8, bStart: 3, cad: [1, 4, 0], cells: [[2, 1, 1], [1.5, .5, 2], [1, 1, 2]], hookBars: 2, moves: 'functional',
       charts: [{ sec: { A: [0, 5, 1, 4, 2, 5, 1, 4], B: [3, 3, 2, 5, 1, 4, 1, 4] } }] } },
   // 1.22 flamenco: phrygian with a major I, soleá 12-count compás (resolves on count 10), iv - II - I remate (III flagged)
-  { id: 'flamenco', name: 'Flamenco', pal: 'flamenco', aura: 'lattice', harm: 'move', glide: .3, dens: 1,
+  { id: 'flamenco', name: 'Flamenco', pal: 'flamenco', aura: 'lattice', harm: 'move', glide: .3, dens: 1, voicings: { 2: [2, 4, 6] }, alts: { 2: { 2: -100 } },   // F3: III = G B D (G# -> G while it sounds): the real Andalusian iv - III - II - I
     scales: [SC('phrygian dominant', ET([0, 1, 4, 5, 7, 8, 10]), { focus: [0, 4, 1] })],
     tempos: [['soleá', 150, { cycle: 'solea' }], ['tangos', 112, { cycle: 'backbeat' }]], swing: 0, tight: .9, div: 4,
     song: { form: ['A', 'B', 'A', 'B'], len: 6, bStart: 3, cad: [1, 0], cells: [[.5, .5, .5, .5, 2], [1, .5, .5, 2], [.25, .25, .5, 1, 2]], hookBars: 1, moves: 'functional',
-      charts: [{ sec: { A: [3, 1, 0, 3, 1, 0], B: [3, 3, 0, 3, 1, 0] } }] } },
+      charts: [{ sec: { A: [3, 1, 0, 3, 1, 0], B: [3, 2, 0, 3, 1, 0] } }, { sec: { A: [3, 2, 1, 0, 1, 0], B: [3, 2, 0, 3, 1, 0] } }] } },
   // 1.23 Balkan aksak: 7/8 2+2+3 and 3+2+2, 9/8, 11/8, tonic drone, A A B B
   { id: 'aksak', name: 'Balkan aksak', pal: 'aksak', aura: 'knot', harm: 'drone', drone: [0, 4], glide: .15, dens: 1.2,
     scales: [SC('hijaz', ET([0, 1, 4, 5, 7, 8, 10]), { focus: [0, 4, 3] }), SC('ukrainian dorian', ET([0, 2, 3, 6, 7, 9, 10]), { focus: [0, 4, 3] }), SC('minor', MIN, { focus: [0, 4, 3] })],

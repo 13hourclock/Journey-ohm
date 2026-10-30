@@ -68,4 +68,15 @@ for (const n of ['shuffle', 'rock', 'funk16', 'rumbaclave', 'samba', 'bossa', 'l
   ok(parts.length === 1 && JSON.stringify(parts[0][1].save()).includes('"blues"'), 'home tradition saved');
   host._trad = null; parts[0][1].load([[1, 'celtic', 'jig']]); ok(host._trad === 'celtic', 'home tradition restored');
   G.opts.on = false; const off = play(guest, 50); ok(off.length === 50 && off.every((e, i) => e.deg === 1 + (i % 2) * 2 && !e.grace), 'switch off: guest plays exactly as before'); G.opts.on = true; }
+// 9 F3 chromatic chords: the altered steps sound while the chord does
+{ const realPcs = (id, r) => { const T = planetTradition(5, null, TRAD_OPTS, id), c = TUNINGS[T.tuning].notes, a = (T.alts || {})[r] || {}; return T.voice(r).map(d => { const k = ((d % 7) + 7) % 7; return ((c[k] + (a[k] || 0)) % 1200 + 1200) % 1200; }); };
+  ok(JSON.stringify(realPcs('blues', 4)) === '[700,1100,200,500]', 'blues V7 = G B D F ' + realPcs('blues', 4));
+  ok(JSON.stringify(realPcs('flamenco', 2)) === '[300,700,1000]', 'flamenco III = G B D over E (300 700 1000) ' + realPcs('flamenco', 2));
+  ok(JSON.stringify(realPcs('samba', 5)) === '[900,100,400,700]', 'samba VI7 = A C# E G ' + realPcs('samba', 5));
+  let t = 0; const world = { pseed: 3, home: { trad: null }, terrOf: L => L }, sim = { ohms: [], world }, M4 = createMusic(() => t), b4 = createEvents(M4), H4 = createHarmony(world, b4, M4);
+  const R = createTraditions({ sim, bus: b4, music: M4, harmony: H4, world }); R.plant('blues'); R.refresh(); const got = []; b4.on('note', ev => got.push(ev));
+  const src = { id: 9, scale: 'ohm' }; M4.chord = { root: 4, tones: M4.tonesOf(4) }; b4.note({ src, kind: 'note', deg: 6, oct: 0, vel: .5, t: 0 }); b4.note({ src, kind: 'note', deg: 4, oct: 0, vel: .5, t: 0 });
+  ok(got[0].alt === 100 && !got[1].alt, 'over V7 the Bb step plays B (+100 c), the root is untouched');
+  b4.note({ src, kind: 'note', deg: 6, oct: 0, vel: .5, t: 0, root: 0 }); ok(!got[2].alt, 'a song note tagged with its own bar chord (I7) is not altered');
+  R.opts.chroma = false; b4.note({ src, kind: 'note', deg: 6, oct: 0, vel: .5, t: 0 }); ok(!got[3].alt, 'switch off: diatonic as before'); R.opts.chroma = true; }
 console.log(fails ? fails + ' FAIL' : 'WAVE2 OK'); process.exit(fails ? 1 : 0);

@@ -37,7 +37,7 @@ export function createSound(bus, world, audio, music, matrix) {
     if (ev.kind === 'damp') { audio.send({ t: 'damp', src: o.id, tau: ev.tau || .08 }); return; }
     if (ev.kind === 'level') { for (const id of S.sustains.get(o.id) || []) audio.send({ t: 'instGain', id, gain: ev.gain }); return; }
     if (!S.racks.has(o.id) && rec.fx.length) S.syncFx(o, S.lastLive.get(o.id));
-    ev.f = ev.f || music.hz(ev.deg == null ? 0 : ev.deg, ev.oct || 0);
+    ev.f = ev.f || music.hz(ev.deg == null ? 0 : ev.deg, ev.oct || 0) * (ev.alt ? Math.pow(2, ev.alt / 1200) : 1);   // ev.alt: a chromatic alteration in cents (traditions: a chord's raised / lowered step, F3)
     const N = matrix.noteOffsets(o, ev), V = { f: ev.f, vel: ev.vel, pos: ev.pos, dur: ev.dur, pan: ev.pan, src: o.id, fx: S.head(o), sustain: ev.sustain };
     const DL = o.scale === 'ohm' && rec.inst && world.blend && world.blend.driftFor ? world.blend.driftFor(o) : null;   // LEARNING DRIFT (MT + Wilbow 10:52): its own sound, moved by the songs it jammed
     const SO = o.scale === 'ohm' && world.soloFor ? world.soloFor(o, ev) : null;   // learnvoice.js: a fully learned sound now and then plays a phrase cleanly on its own (learnSolo, OFF)
