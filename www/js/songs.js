@@ -18,7 +18,7 @@ import { recipes, octaveOf } from './recipe.js';
 import { rng } from './rng.js';
 import { SOURCES } from './matrix.js';
 import { noLine, softPool, softDot } from './soft.js';   // v0.0.30 B7: no outlines
-export const SONG_OPTS = { on: true, catchN: 3, minBars: 8, slowBars: 24, maxGroup: 4, settle: 2, meet: true, carry: .45, rest: [4, 12], tradPlays: 3, reach: 4,
+export const SONG_OPTS = { strongSnap: true, on: true, catchN: 3, minBars: 8, slowBars: 24, maxGroup: 4, settle: 2, meet: true, carry: .45, rest: [4, 12], tradPlays: 3, reach: 4,
   sectionBang: .25,
   momentK: .3, cadenceN: 3,
   breakdown: true, bdChance: .25, bdLen: [2, 4], bdMin: 3,
@@ -61,9 +61,11 @@ const walk = (T, r, start, len, endOn) => { const out = [start]; for (let i = 1;
   if (endOn != null) out[len - 1] = endOn; return out; };
 export function songFromTradition(T, seed, name) { const r = rng(hsh(T.seed, seed)), sec = {}; const A = walk(T, r, 0, T.len, 4), B = walk(T, r, T.bStart, T.len, 4), C = walk(T, r, T.bStart === 5 ? 3 : 5, T.len, 0);
   sec.A = A; if (T.form.includes('B')) sec.B = B; if (T.form.includes('C')) sec.C = C;
+  // wave 2: a tradition with fixed charts (12-bar blues, ii-V-I, iv-II-I...) plays one of them (picked by the song seed); the hook and cadence as before
+  let form = T.form, end = T.cad; if (T.charts && T.charts.length) { const ch = T.charts[Math.floor(r() * T.charts.length)]; for (const k in ch.sec) sec[k] = ch.sec[k].slice(); for (const k of Object.keys(sec)) if (!ch.sec[k]) delete sec[k]; if (ch.form) form = ch.form; if (ch.end) end = ch.end; }
   const tones = [A[0], A[0] + 2, A[0] + 4, A[0] + 7], hook = []; let b = 0, d = tones[Math.floor(r() * 3)];
   for (let bar = 0; bar < T.hookBars; bar++) for (const len of T.cells[bar % T.cells.length]) { hook.push(N(d, b, len, .6 + r() * .3)); b += len; d += r() < .6 ? (r() < .5 ? 1 : -1) : (r() < .5 ? 2 : -2); if (len >= 2) d = tones[Math.floor(r() * 3)]; }
-  return { id: 'w.' + T.seed.toString(36) + '.' + seed.toString(36), name: name || 'song ' + seed.toString(36).slice(-4), origin: 'world', planetSeed: T.seed, sec, form: T.form.slice(), end: T.cad.slice(), hook, hookBars: T.hookBars }; }
+  return { id: 'w.' + T.seed.toString(36) + '.' + seed.toString(36), name: name || 'song ' + seed.toString(36).slice(-4), origin: 'world', planetSeed: T.seed, sec, form: form.slice(), end: end.slice(), hook, hookBars: T.hookBars }; }
 export function createSongs(sim, bus, music, harmony, autojam, opts = {}) {
   const O = { ...SONG_OPTS, ...opts }, S = { opts: O, lib: new Map(), groups: [], jams: new Map(), met: new Set(), lastBar: -1, ms: 0, carrier: null, pushB: -99, starts: 0, caught: 0, ends: 0, sig: {} };
   for (const s of DEV_SONGS) S.lib.set(s.id, { ...s, plays: 0, made: 0 });
@@ -118,7 +120,8 @@ export function createSongs(sim, bus, music, harmony, autojam, opts = {}) {
   const caught = J => { const t = T(), r = rng(hsh(J.first, J.bars, t.seed)), hk = J.best, ids = J.key === 'you' ? null : J.key.split('-').map(Number);
     const members = ids ? ids.map(i => sim.byId.get(i)).filter(Boolean) : [sim.jam && sim.jam.partner].filter(Boolean); if (!members.length) { S.jams.delete(J.key); return; }
     const roots = J.roots.length >= 4 ? J.roots.slice(-t.len) : walk(t, r, hk.root || 0, t.len, 4); while (roots.length < t.len) roots.push(roots[roots.length - 1]); roots[0] = hk.root || roots[0];
-    const sec = { A: roots, B: walk(t, r, t.bStart, t.len, 4) }; if (t.form.includes('C')) sec.C = walk(t, r, 5, t.len, 0);
+    const ch = t.charts && t.charts.length ? t.charts[Math.floor(r() * t.charts.length)] : null;   // wave 2 charts: the contrasting sections come from the tradition's chart
+    const sec = { A: roots, B: ch && ch.sec.B ? ch.sec.B.slice() : walk(t, r, t.bStart, t.len, 4) }; if (t.form.includes('C')) sec.C = ch && ch.sec.C ? ch.sec.C.slice() : walk(t, r, 5, t.len, 0);
     const id = (J.key === 'you' ? 'p.' : 'g.') + Date.now().toString(36) + '.' + J.key.replace('-', '.'), s = S.add({ id, name: (J.key === 'you' ? 'our song ' : 'song ') + id.slice(2, 7), origin: J.key === 'you' ? 'player' : 'grown',
       planetSeed: t.seed, sec, form: t.form.includes('B') ? t.form.slice() : ['A', 'A', 'B', 'A'], end: t.cad.slice(), hook: hk.notes.map(n => ({ ...n })), hookBars: 1, cast: members.map(m => m.seed), from: J.key });
     S.caught++; S.jams.delete(J.key); bus.post({ type: 'song.caught', song: s, members });
@@ -159,13 +162,19 @@ export function createSongs(sim, bus, music, harmony, autojam, opts = {}) {
   const gene = (o, salt) => u01(o.seed || o.id, salt);
   const partsFor = (G, bi, L) => { const s = G.song, bars = L[bi], out = new Map(), ms0 = G.members.slice().sort((a, b) => gene(b, 3) - gene(a, 3)), ms = sim.jamRoles ? sim.jamRoles.songOrder(G, ms0) : ms0,   /* jam roles: whoever is out front now carries the melody */ hr = s.sec[s.form[0]][0], hb = s.hookBars || 1;
     const isHook = bars.sec !== 'end' && (bars.sec === s.form[0] || bars.sec === 'A') && bars.i < hb, last = bi === L.length - 1, r = bars.r, tones = [r, r + 2, r + 4];
+    // STRONG-BEAT CHORD TONES (TRADITION_REFERENCE 0.5 lead: chord tones on strong beats; switch O.strongSnap, ON): the melody's notes on beats 1 and 3, and its held notes on
+    // beats 2 and 4, move at most 2 scale steps to the nearest tone of THIS bar's chord (the hook was written over the first chord; replayed over the next one it clashed).
+    // Weak-beat notes, rhythm and contour stay; drone traditions (no chords) are left alone. Off = as before.
+    const ctM = (music.tonesOf ? music.tonesOf(r) : tones).map(t => ((t % 7) + 7) % 7), droneT = music.trad && music.trad.harm === 'drone';
+    const snap = n => { if (!O.strongSnap || droneT) return n; const bt = Math.round(n.b); if (Math.abs(n.b - bt) > .01 || !(bt % 2 === 0 || (n.len || 0) >= 1)) return n;
+      if (ctM.includes(((n.d % 7) + 7) % 7)) return n; for (const k of [-1, 1, -2, 2]) if (ctM.includes((((n.d + k) % 7) + 7) % 7)) return { ...n, d: n.d + k }; return n; };
     const low = G.members.slice().sort((a, b) => octaveOf(recipes.get(a.recipe)) - octaveOf(recipes.get(b.recipe)) || a.seed - b.seed)[0];
     for (const m of G.members) { const ns = [], d = gene(m, 3), mine = bars.grown ? (G.gparts && G.gparts[m.seed] && G.gparts[m.seed][bars.sec]) : (s.parts && s.parts[m.seed] && s.parts[m.seed][bars.sec]);   // grown sections (jamgrow.js) never read / write the library song
       if (mine) { for (const n of mine) if (n.b >= bars.i * 4 && n.b < bars.i * 4 + 4) ns.push({ ...n, b: n.b - bars.i * 4, own: 1 }); out.set(m, ns); continue; }   // edited in the river
       if (last) { ns.push(N(tones[ms.indexOf(m) % 3] + (m === low ? -7 : 0), 0, 3.5, .8)); out.set(m, ns); continue; }   // the ending: everyone lands on the home chord
       const melo = isHook ? ms[0] : ms[bi % Math.min(2, ms.length)];
       if (m === melo) { const src = isHook ? s.hook.filter(n => n.b >= bars.i * 4 && n.b < bars.i * 4 + 4).map(n => ({ ...n, b: n.b - bars.i * 4 })) : s.hook.filter(n => n.b < 4).map(n => ({ ...n, d: n.d + (r - hr) }));
-        const drift = driftOf(m, s); src.forEach((n, i) => { const wrong = u01(m.seed, i, bi, hsh(s.id.length, s.id.charCodeAt(2) || 0)) < drift * .6; ns.push({ ...n, d: n.d + (wrong ? (u01(m.seed, i, 7) < .5 ? 1 : -1) : 0), wrong: wrong ? 1 : 0, hook: isHook ? 1 : 0 }); }); }
+        const drift = driftOf(m, s); src.forEach((n0, i) => { const n = snap(n0); const wrong = u01(m.seed, i, bi, hsh(s.id.length, s.id.charCodeAt(2) || 0)) < drift * .6; ns.push({ ...n, d: n.d + (wrong ? (u01(m.seed, i, 7) < .5 ? 1 : -1) : 0), wrong: wrong ? 1 : 0, hook: isHook ? 1 : 0 }); }); }
       else if (m === low) { ns.push(N(r - 7, 0, 1.8, .55)); if (d > .45) ns.push(N(r - 7 + (d > .75 ? 4 : 0), 2, 1.5, .45)); }
       else { const n = 1 + Math.round(d * 3), lp = sim.blend && sim.blend.pattern ? sim.blend.pattern(m) : null; for (let j = 0; j < n; j++) ns.push(N(tones[(j + (bi & 1)) % 3], lp && lp.rh ? Math.min(3.75, lp.rh[j % lp.rh.length]) : j * 4 / n, .8, .45)); }
       out.set(m, ns); }
@@ -212,7 +221,7 @@ export function createSongs(sim, bus, music, harmony, autojam, opts = {}) {
     for (const J of S.jams.values()) { if (J.last >= bar - 2) { J.roots.push(music.chord ? music.chord.root : 0); if (J.roots.length > 16) J.roots.shift(); } else if (J.last < bar - 32) S.jams.delete(J.key); }
     // the song carrying the chords: the strongest one near you, unless you moved the harmony yourself in the last 2 bars
     const cands = S.groups.filter(G => G.state === 'song' && G.k >= O.carry).sort((a, b) => b.k - a.k); S.carrier = cands[0] && music.beat() - S.pushB > 8 ? cands[0] : null;
-    if (S.carrier) { const G = S.carrier, L = G.L || (G.L = barsOf(G.song)), bi = bar - G.start; if (bi >= 0 && bi < L.length) { const r = L[bi].r; if (!music.chord || music.chord.root !== r) { music.chord = { root: r, tones: [r, r + 2, r + 4] }; for (const f of music.listeners) f(); } } }
+    if (S.carrier) { const G = S.carrier, L = G.L || (G.L = barsOf(G.song)), bi = bar - G.start; if (bi >= 0 && bi < L.length) { const r = L[bi].r; if (!music.chord || music.chord.root !== r) { music.chord = { root: r, tones: music.tonesOf ? music.tonesOf(r) : [r, r + 2, r + 4] }; for (const f of music.listeners) f(); } } }
     for (const G of S.groups) { if (G.state === 'rest' && bar >= G.rest) { const s = pickNext(G); if (s) start(G, s, 0); } }
     S.qSorted = false; if (!O.spread && S.q.length) S.flushQ();
     for (const G of S.groups) if (G.state === 'song') { const was = G.settled; play(G, bar + 1); if (G.state === 'song' && bar + 1 - G.start === 0 && G.plays >= O.settle && bar - G.touch > 16) G.settled = 1; if (was && !G.settled) G.cache = null; }

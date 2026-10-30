@@ -9,6 +9,7 @@
 import { TUNINGS } from './music.js';
 import { CYCLES, cycleInfo, setTradCycle } from './drums.js';
 import { PLACE, setPlace } from './instruments.js';
+import { WAVE2, WAVE2_IDS, GROUP_MAP2 } from './traditions_wave2.js';
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const hsh = (a, b) => { let h = ((a >>> 0) * 2654435761 ^ (b >>> 0) * 40503 ^ 0x7f4a7c15) >>> 0; h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0; return (h ^ (h >>> 16)) >>> 0; };
 const rnd = s => { let x = s >>> 0 || 1; return () => (x = (Math.imul(x, 1664525) + 1013904223) >>> 0) / 4294967296; };
@@ -59,7 +60,9 @@ export const TRADS = [
     tempos: [['techno', 130, { cycle: 'four', tight: 1 }], ['house', 124, { cycle: 'four', swing: .35, tight: .95 }]], swing: 0, tight: 1, div: 4,
     song: { form: ['A', 'A', 'B', 'A'], len: 8, bStart: 3, cad: [3, 0], cells: [[.5, .5, .5, .5, .5, .5, .5, .5], [1, .5, .5, 1, 1], [.75, .25, 1, 2]], hookBars: 1, moves: 'loop' } },
 ];
+TRADS.push(...WAVE2);   // wave 2 (traditions_wave2.js): 21 more, switch opts.wave2
 export const TRAD_IDS = TRADS.map(t => t.id);
+const W2 = new Set(WAVE2_IDS);
 // Music Theory #8 / #9: per-degree WEIGHTS (0-based degrees; weights, never limits): pathet w (gamelan) x focus degrees (raga Sa / vadi /
 // samvadi, maqam tonic / ghammaz; each distinct degree x(1+FOCUS_K), a repeat counts once). jam.js reads music.trad.degW (null = all 1). FOCUS_K .5 is my default.
 export const FOCUS_K = .5;
@@ -72,15 +75,19 @@ for (const T of TRADS) for (const [nm, cents] of T.scales) { const k = 'trad.' +
 export const TEMPO_K = [1 / 2, 2 / 3, 3 / 4, 1, 5 / 4, 4 / 3, 3 / 2, 5 / 3, 2, 9 / 4, 5 / 2, 3];
 export function tempoKFor(om, target) { const base = om / 64 * 60; let best = 1; for (const k of TEMPO_K) if (Math.abs(Math.log2(base * k / target)) < Math.abs(Math.log2(base * best / target))) best = k; return best; }
 // Q16 B: the land's scales.js tradition groups (terrain.js T.trad order) -> these eight. LEAN_K = how strongly (PENDING MT / Wilbow)
-export const GROUP_MAP = [{ western: .6, celtic: .4 }, { hindustani: 1 }, { maqam: 1 }, { japan: 1 }, { gamelan: 1 }, { wafrica: 1 }, { western: .5, wafrica: .5 }, { maqam: .5, western: .3, celtic: .2 }];
-export const TRAD_OPTS = { on: true, tuning: true, tempo: true, feel: true, cycle: true, accent: true, accentK: .3, lean: true, drone: true, tonicPull: 1.5, songs: true, blend: false, blendK: .35, leanK: 2,
+export const GROUP_MAP = [{ western: .6, celtic: .4 }, { hindustani: 1 }, { maqam: 1 }, { japan: 1 }, { gamelan: 1 }, { wafrica: 1 }, { western: .5, wafrica: .5 }, { maqam: .5, western: .3, celtic: .2 }]
+  .map((g, j) => ({ ...g, ...(GROUP_MAP2[j] || {}) }));   // wave 2 leans only count when wave 2 is on (planetTradition skips disabled ids)
+export const TRAD_OPTS = { on: true, tuning: true, tempo: true, feel: true, cycle: true, accent: true, accentK: .3, lean: true, drone: true, tonicPull: 1.5, songs: true, blend: false, blendK: .35, leanK: 2, wave2: true,
   enabled: Object.fromEntries(TRAD_IDS.map(id => [id, true])) };
 const MOVES = kind => { const m = Array.from({ length: 7 }, () => new Array(7).fill(.05));
   for (let i = 0; i < 7; i++) { if (kind === 'drone') { m[i][0] = 3; m[i][4] += .3; } else if (kind === 'loop') { m[i][0] += 1; m[i][3] += 1; m[i][5] += .4; } else { m[i][(i + 3) % 7] += .9; m[i][(i + 4) % 7] += 1; m[i][0] += .5; m[i][i] *= .3; } }
   return m; };
+// chord shapes (wave 2): voicings per root slot, or 7th chords; null = the plain triad (wave 1, unchanged)
+export const voiceOf = D => { if (!D.voicings && !D.sev) return null; const V = D.voicings || {};
+  return r => { const b = ((r % 7) + 7) % 7, o = r - b, v = V[b]; if (v) return v.map(x => (x < b ? x + 7 : x) + o); return D.sev ? [r, r + 2, r + 4, r + 6] : [r, r + 2, r + 4]; }; };
 // the planet's tradition: pure function of the planet seed + the land's group shares (+ which traditions are enabled, or a forced / planted id)
 export function planetTradition(seed, landTrad, opt = TRAD_OPTS, force = null) { const r = rnd(hsh(seed, 0x7ad1));
-  const ids = TRAD_IDS.filter(id => opt.enabled[id] !== false); if (!ids.length) return null;
+  const ids = TRAD_IDS.filter(id => opt.enabled[id] !== false && (opt.wave2 !== false || !W2.has(id))); if (!ids.length) return null;
   const w = {}; for (const id of ids) w[id] = 1; if (landTrad) for (let j = 0; j < GROUP_MAP.length; j++) { const sh = +landTrad[j] || 0; for (const id in GROUP_MAP[j]) if (w[id] != null) w[id] += (opt.leanK || 0) * sh * GROUP_MAP[j][id]; }
   let id = force && w[force] != null ? force : null; const u0 = r(); if (!id) { let tot = 0; for (const k of ids) tot += w[k]; let u = u0 * tot; id = ids[ids.length - 1]; for (const k of ids) { u -= w[k]; if (u <= 0) { id = k; break; } } }
   const D = byTradId(id), sc = D.scales[Math.floor(r() * D.scales.length)], tp = D.tempos[Math.floor(r() * D.tempos.length)], ov = tp[2] || {};
@@ -90,9 +97,9 @@ export function planetTradition(seed, landTrad, opt = TRAD_OPTS, force = null) {
   const T = { id, name: D.name, seed: seed >>> 0, scale: sc[0], cents: sc[1].slice(), tuning: 'trad.' + id + '.' + sc[0], micro: TUNINGS['trad.' + id + '.' + sc[0]].micro, tempoName: tp[0], bpm: tp[1],
     swing, tight, div, cycle: cyc, harm: D.harm, glide: D.glide, dens: D.dens, pal: D.pal, second, forced: !!(force && id === force),
     timeOfDay: sc[2] && sc[2].tod != null ? sc[2].tod : null, drone: (sc[2] && sc[2].drone || D.drone || [0, 4]).slice(), focus: sc[2] && sc[2].focus ? sc[2].focus.slice() : null, degW: degWOf(sc[2]),
-    auraPalette: pal, auraRoles: roles,
+    auraPalette: pal, auraRoles: roles, pull: D.pull, voice: voiceOf(D), wave2: W2.has(id),
     auraPattern: { kind: D.aura, fold: 6, density: .5, speed: clamp(tp[1] / 180, .1, 1), beatLock: tight, swing, rings: [{ speed: .5 }, { speed: .5 }, { speed: .5 }], pulse: { period: cy ? cy.beats : 4, phase: 0 } } };
-  const S = D.song; T.songShape = { seed: seed >>> 0, id, name: D.name, trad: id, form: S.form.slice(), len: ov.len || S.len, moves: MOVES(S.moves), bStart: S.bStart, cad: S.cad.slice(), cells: S.cells.map(c => c.slice()), hookBars: S.hookBars };
+  const S = D.song; T.songShape = { seed: seed >>> 0, id, name: D.name, trad: id, form: S.form.slice(), len: ov.len || S.len, moves: MOVES(S.moves), bStart: S.bStart, cad: S.cad.slice(), cells: S.cells.map(c => c.slice()), hookBars: S.hookBars, charts: S.charts ? S.charts.map(c => ({ ...c, sec: Object.fromEntries(Object.entries(c.sec).map(([k, v]) => [k, v.slice()])) })) : null };
   return T; }
 // ---- the engine: applies the planet's tradition, undoes it cleanly when off ----
 export function createTraditions({ sim, bus, music, harmony, world, opts = {} }) {
@@ -117,7 +124,7 @@ export function createTraditions({ sim, bus, music, harmony, world, opts = {} })
     if (O.cycle && T.cycle) { setTradCycle(T.pal, T.cycle); }
     const tr = {}; if (O.lean || O.cycle) tr[T.pal] = 1; if (O.blend && T.second) { tr[T.second] = O.blendK; tr[T.pal] = 1 - O.blendK; const D2 = byTradId(T.second); if (O.cycle && D2) setTradCycle(D2.pal, (D2.tempos[0][2] || {}).cycle); }
     setPlace({ trad: tr, ground: PLACE.ground });
-    if (O.drone && T.harm === 'drone') { setPull(O.tonicPull); if (music.chord) music.chord = { root: 0, tones: (T.drone || [0, 4]).slice(), kind: 'drone' }; }   // the starting chord only; jams move on from it
+    if (O.drone && T.harm === 'drone') { setPull(T.pull != null ? T.pull : O.tonicPull); if (music.chord) music.chord = { root: 0, tones: (T.drone || [0, 4]).slice(), kind: 'drone' }; }   // the starting chord only; jams move on from it
     const W = world || sim.world; if (W && O.songs && (!W.tradition || W.tradition === R.songHook)) W.tradition = R.songHook;
     for (const o of sim.ohms || []) stamp(o);
     if (bus) bus.post({ type: 'tradition', trad: T }); };
@@ -126,7 +133,7 @@ export function createTraditions({ sim, bus, music, harmony, world, opts = {} })
   R.refresh = () => { key = ''; R.tick(); };
   let lastPs = null; R.tick = () => { const ps0 = pseed(); if (ps0 === lastPs && key) { if (!R.applied) return; const b = Math.floor(music.beat() / 4); if (b === bar) return; bar = b;
       if (O.tempo && music.lock) { const k2 = tempoKFor(music.om, R.cur.bpm); if (k2 !== music.tempoK) music.setTempoK(k2); } return; } lastPs = ps0;
-    const ps = ps0, f = R.plantedBy.has(ps) ? R.plantedBy.get(ps) : null, k = ps + '|' + O.on + '|' + f + '|' + O.leanK + '|' + TRAD_IDS.map(id => O.enabled[id] ? 1 : 0).join('') + [O.tuning, O.tempo, O.feel, O.cycle, O.lean, O.drone, O.songs, O.blend].map(Number).join('');
+    const ps = ps0, f = R.plantedBy.has(ps) ? R.plantedBy.get(ps) : null, k = ps + '|' + O.on + '|' + f + '|' + O.leanK + '|' + TRAD_IDS.map(id => O.enabled[id] ? 1 : 0).join('') + [O.tuning, O.tempo, O.feel, O.cycle, O.lean, O.drone, O.songs, O.blend, O.wave2].map(Number).join('');
     if (k !== key) { key = k; if (!O.on) { undo(); R.cur = null; return; } apply(planetTradition(ps, landOf(), O, f)); return; }
     if (!R.applied) return; const b = Math.floor(music.beat() / 4); if (b === bar) return; bar = b;   // once a bar: a re-lock / om change re-fits the tempo ratio
     if (O.tempo && music.lock) { const k2 = tempoKFor(music.om, R.cur.bpm); if (k2 !== music.tempoK) music.setTempoK(k2); } };
@@ -135,7 +142,7 @@ export function createTraditions({ sim, bus, music, harmony, world, opts = {} })
   // these are fallbacks only, same types, and any write turns them into plain values (rare.js assigns them).
   const own = (o, k, get) => { if (!Object.getOwnPropertyDescriptor(o, k)) Object.defineProperty(o, k, { configurable: true, enumerable: false, get, set: v => { Object.defineProperty(o, k, { value: v, writable: true, configurable: true, enumerable: true }); } }); };
   const tshape = new Map(), shapeOf = id => { if (!id) return null; if (R.cur && R.cur.id === id) return R.cur.songShape; let t = tshape.get(id); if (!t) { const d = byTradId(id); t = { id, trad: id, name: d ? d.name : id }; tshape.set(id, t); } return t; };
-  const stamp = o => { if (!o || o.scale !== 'ohm') return; if (o._trad == null && R.cur) o._trad = R.cur.id;
+  const stamp = o => { if (!o || o.scale !== 'ohm') return; if (o._trad == null && R.cur) { o._trad = R.cur.id; if (o._tradSc == null) o._tradSc = R.cur.scale; }
     if (!Object.getOwnPropertyDescriptor(o, 'tradId')) Object.defineProperty(o, 'tradId', { configurable: true, enumerable: false, get: () => o._trad || (R.cur && R.cur.id) || null, set: v => { o._trad = v; } });
     own(o, 'tradition', () => shapeOf(o.tradId)); own(o, 'rarity', () => o.wild ? 1 : 0); own(o, 'tier', () => 0);
     if (!Object.getOwnPropertyDescriptor(o, 'lively')) Object.defineProperty(o, 'lively', { configurable: true, enumerable: false, get: () => o.g && o.g.calm != null ? clamp(1 - (o.g.calm - .35) / .5, 0, 1) : .5 }); };
@@ -165,6 +172,7 @@ export function createTraditions({ sim, bus, music, harmony, world, opts = {} })
     ck('  drone traditions hold the tonic (raga, maqam, gamelan, Japanese)', () => O.drone, v => { O.drone = v; });
     ck('  songs take its shape', () => O.songs, v => { O.songs = v; });
     ck('  blend a neighbouring tradition (Q150: later; off)', () => O.blend, v => { O.blend = v; });
+    ck('  wave 2: 21 more traditions (jazz, blues, funk, carnatic, makam, dastgah, Chinese, son, rumba, samba, bossa, flamenco, aksak, Andean, overtone, reggae, dnb, minimal, classical, modal, rock/pop; off = the first eight only)', () => O.wave2 !== false, v => { O.wave2 = v; });
     for (const T of TRADS) ck('  ' + T.name, () => O.enabled[T.id] !== false, v => { O.enabled[T.id] = v; });
     const sl = document.createElement('label'); sl.innerHTML = `<span>plant a tradition on this planet (dev, Q149 C)</span><select><option value="">from the seed + land</option>${TRADS.map(T => `<option value="${T.id}">${T.name}</option>`).join('')}</select>`;
     sl.querySelector('select').onchange = e => { R.plant(e.target.value || null); R.refresh(); }; w.appendChild(sl);
