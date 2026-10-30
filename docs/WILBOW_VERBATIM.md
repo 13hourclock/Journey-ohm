@@ -1817,3 +1817,15 @@ In order"  [CANCELS the ~3:16 PM voice-call entries above on Q350, Q351/352 and 
 - Oct 26 2026, 9:17 PM MDT (my chat): "All future releases should include a handoff and both apk and all source code and Levant materials like screenshots, a log of changes, anything needed to help coordinate"
 - Oct 26 2026, 9:18 PM MDT (my chat): "Finish current build if theres enough usage left but prioritize hand off"
 - Oct 26 2026, 9:18 PM MDT (my chat): "Include instructions for future collaboration"
+- Oct 29 2026, 9:19 PM MDT (Claude chat): "We want to integrate the features and sound stuff that is worthwhile. I started over and rebuilt a new one based on advice from grok. Im not sure if it was the correct move as there was some confusion"
+- Oct 29 2026, 9:24 PM MDT (Claude chat): "Why is the visual style so different? If soft body physics and unique ohms can be a scalable feature, the old game felt better, although id like to stylized the ohms more later, it wasnt a priority at first"
+- Oct 29 2026, 9:27 PM MDT (Claude chat): "2 both" (do both: the music fixes and the old ohm bodies)
+- Oct 29 2026, 9:32 PM MDT (Claude chat): "The new game should have more, theres a large list somewhere i thought, and I had encouraged expanding what was implemented."
+- Oct 29 2026, 9:34 PM MDT (Claude chat): "Good" (to: copy the music docs, add the 9 approved + the other 12 traditions, look into chord agreement, then bodies)
+- Oct 29 2026, 9:37 PM MDT (Claude chat): "Keep in mind that these musical traditions need to encounter eachother in the game and interact in a musically sound way. We dont need to calculate all those outcomes yet but it is a part of the game"
+- Oct 29 2026, 9:39 PM MDT (Claude chat): "the ohms need to be able to be brought into Jams on other planets, without having to write all the missions"
+- Oct 29 2026, 9:43 PM MDT (Claude chat): "How can a user influence the key? We want to be able to actually play music with it and keep it fun. Perhaps initial starting conditions vs what is available when playing"
+- Oct 29 2026, 9:47 PM MDT (Claude chat): "Keep the key changes as discussion. Continue with partially completed music items and body"
+- Oct 29 2026, 9:57 PM MDT (Claude chat): "Deviding development into categories to maximize efficiency and make sure there no confusion generated from discussion and idea making is necessary. My main problem has been development happening based on misunderstandings"
+- Oct 29 2026, 10:02 PM MDT (Claude chat): "Can we make the build private now?" (repo visibility: Claude could not change it; left with Wilbow)
+- Oct 29 2026, 10:12 PM MDT (Claude chat): "Do all, keep discussion going" (to the approval list: keep M1, M2, F2, O1, M3x; build O2 walking legs and F3 chromatic chords; merge PRs #1-#4; write a Grok note; K1, M4, M5 stay discussion)

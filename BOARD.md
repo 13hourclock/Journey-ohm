@@ -28,18 +28,27 @@ says **which category each item is in**.
 
 ## 2. BUILT (check on the phone, then say keep / change / undo)
 
-| ID | Area | What | Basis | Switch | Branch / PR |
+| ID | Area | What | Basis | Switch | PR |
 |---|---|---|---|---|---|
-| M1 | Music | 21 more traditions: jazz, blues, funk, Carnatic, Turkish makam, Persian dastgah, Chinese, Cuban son, rumba, samba, bossa, flamenco, Balkan aksak, Andean, overtone, reggae/dub, drum & bass, minimal, classical, modal, rock/pop; real scales, cycles and chord charts | 9 approved 4:59 PM Oct 23; "I had encouraged expanding" 9:32 PM Oct 29. The other 12 and every recipe value: (builder's call) from TRADITION_REFERENCE.md | traditions: wave 2 | `music/traditions-wave2` |
-| M2 | Music | Guest accent: an ohm carried to another planet keeps its home tradition and, in a host jam, leans weak notes to its home focus notes, adds home grace notes, rests like home; always in the host key / tuning / tempo / cycle. Logs each meeting of two traditions | "traditions need to encounter each other ... musically sound" 9:37 PM, "brought into Jams on other planets, without ... missions" 9:39 PM Oct 29. The three rules: (builder's call) | guestAccent | `music/traditions-wave2` |
-| O1 | Ohms | Body plans from the first game: blob, shell, serpent, strider, drum-belly, cluster, floater, from the instrument; gene outlines; 0-6 legs; spikes, fronds, feelers, tail, keel, fins, bubbles, band, plates; serpent segments near you only | "the old game felt better" + "soft body and unique ohms if scalable" 9:24 PM Oct 29; "continue with ... body" 9:47 PM. Mix of plans and how often each appears: (builder's call) | bodyPlans | `ohms/body-plans` |
-| M3x | Music | Placeholder visual families for the new traditions (e.g. jazz uses folk's aura) | (builder's call), for Visuals to design | - | `music/traditions-wave2` |
+| O2 | Ohms | Walking legs: near ohms step with their legs as they move; far ohms keep standing legs | approved 10:12 PM Oct 29 "Do all"; gait speed and stride: (builder's call) | walkLegs | #5 (merged) |
+| F3 | Music | Real chromatic chords: blues V7 (G B D F), flamenco III (the true Andalusian iv-III-II-I), samba VI7 (A C# E G). Still stand-ins: samba iv, the jazz bridge | approved 10:12 PM Oct 29 "Do all"; which chords and charts: (builder's call) | traditions: chromatic chords | #6 (merged) |
+
+## 2b. KEPT (approved after building; Wilbow 10:12 PM Oct 29 "Do all")
+
+| ID | Area | What | Switch | PR |
+|---|---|---|---|---|
+| M1 | Music | 21 more traditions (all recipe values kept) | traditions: wave 2 | #3 |
+| M2 | Music | Guest accent (its three rules kept) | guestAccent | #3 |
+| F2 | Music | Song melodies' strong beats fit the bar's chord | strongSnap | #3 |
+| O1 | Ohms | Body plans from the first game (plan mix kept) | bodyPlans | #4 |
+| M3x | Music | Placeholder visual families for the new traditions, until Visuals designs them | - | #3 |
+| F1 | Tech | Oct 28 "Go with recs" files moved where the game loads them | - | #1 |
 
 ## 3. PROPOSED (waiting for yes / no; not built)
 
 | ID | Area | What | From |
 |---|---|---|---|
-| O2 | Ohms | Walking legs that move with a gait (legs are still drawn standing) | builder |
+| (none open) | | | |
 
 ## 4. DISCUSSION (ideas and thinking; never built from here)
 
@@ -55,7 +64,11 @@ says **which category each item is in**.
 
 | ID | Area | What | Status |
 |---|---|---|---|
-| F1 | Tech | The Oct 28 "Go with recs" files were uploaded to the repo root, so the game never loaded them | fixed, PR #1 (merge to make it live) |
-| F2 | Music | Song melodies replayed over a new chord clashed on strong beats; now nudged to the bar's chord (switch strongSnap) | built, `music/traditions-wave2` |
-| F3 | Music | Engine limit: chords come from the 7 scale notes, so blues V7, flamenco's III and samba's VI7 are approximated | open (needs an engine change; ask first) |
+| F5 | Music | Samba iv and the jazz bridge (ii/IV, V/V) are still diatonic stand-ins (F3 covers blues V7, flamenco III, samba VI7) | open (ask first) |
 | F4 | Tech | tests/look_claim_test fails (already failing before Oct 29); tests/shape_test timing checks fail on a busy machine | open |
+
+## 6. Housekeeping
+
+| ID | What | Status |
+|---|---|---|
+| H1 | Make the GitHub repo private | Wilbow to do it (Claude cannot change repo settings): Settings -> Danger Zone -> Change visibility. Grok loses access to a private repo unless added. |

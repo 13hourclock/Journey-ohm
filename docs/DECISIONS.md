@@ -1485,3 +1485,7 @@ Make it stop the timer for spawn if a twofinger touch on it happens. Then a seco
 10:26 AM MDT Oct 25: "Use the wealth of information and descriptions Ive given,"
 
 10:31 AM MDT Oct 25: "Why cant updates be installed from drive like everything else?  Why are you dropping key game mechanics?  Im going to find another ai to do this.  Any reccomendations?"
+
+## Oct 29 2026 (Claude chat; status board BOARD.md)
+- 9:57 PM: development is divided into categories (DECIDED / BUILT / PROPOSED / DISCUSSION / FIXES) on BOARD.md; ideas default to DISCUSSION; only Wilbow moves items to DECIDED.
+- 10:12 PM "Do all, keep discussion going": KEEP M1 (21 more traditions, all recipe values), M2 (guest accent, its three rules), F2 (strong-beat chord fit), O1 (body plans, plan mix), M3x (placeholder visual families). BUILD O2 (walking legs) and F3 (real chromatic chords): built and merged the same night (PRs #5, #6). Merge PRs #1-#4: done. K1 (key control), M4 (several song groups at once), M5 (traditions meeting outcomes) stay DISCUSSION.
