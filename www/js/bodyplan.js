@@ -11,7 +11,7 @@
 import { rng } from './rng.js';
 import { PALETTE } from './palette_data.js';
 import { ROLE } from './drums.js';
-export const BODY_PLAN = { on: true, harmK: 1, maxK: 1.45, minK: .62 };
+export const BODY_PLAN = { on: true, harmK: 1, maxK: 1.45, minK: .62, walk: true, stepK: 2.4, swing: .2, lift: .1 };   // walk: live stepping legs on near ohms (O2, Wilbow 10:12 PM Oct 29 'Do all')
 export const PLANS = ['blob', 'shell', 'serpent', 'strider', 'drum-belly', 'cluster', 'floater'];
 const TAU = Math.PI * 2, cl = (v, a, b) => Math.max(a, Math.min(b, v));
 // what the voice looks like (old B.look): drum role, sustain, range
@@ -103,3 +103,15 @@ export function stepSegments(s, g, b, dt) { const p = g.plan; if (!p || p.segmen
 export function paintSegment(C, rgba, dx, dy) { return (x, w) => { const h = w / 2, R = h * .92; x.save(); x.beginPath(); x.ellipse(h, h, R, R * .86, 0, 0, TAU); x.fillStyle = rgba(C.base, 1); x.fill(); x.clip();
   let gr = x.createRadialGradient(h + dx * R * .3, h + dy * R * .3, 0, h + dx * R * .2, h + dy * R * .2, R * 1.05); gr.addColorStop(0, rgba(C.pale, .4)); gr.addColorStop(1, rgba(C.pale, 0)); x.fillStyle = gr; x.fillRect(0, 0, w, w);
   gr = x.createRadialGradient(h + dx * R * .45, h + dy * R * .45, R * .25, h + dx * R * .2, h + dy * R * .2, R * 1.55); gr.addColorStop(0, 'rgba(12,10,18,0)'); gr.addColorStop(.6, 'rgba(12,10,18,.3)'); gr.addColorStop(1, 'rgba(12,10,18,.6)'); x.fillStyle = gr; x.fillRect(0, 0, w, w); x.restore(); }; }
+
+// WALKING LEGS (board O2): near ohms' legs are drawn live and step with a gait while the ohm moves along the ground; far ohms keep the baked
+// standing legs. Flat fills only (no gradient per frame). x, y = the body's screen centre, rr = body radius in px, ymaxPx = the belly's depth.
+export function legList(g) { const NL = g.plan ? Math.max(2, g.legs | 0) : 2, out = []; for (let j = 0; j < NL; j++) out.push(NL === 2 ? (j ? 1 : -1) : -1 + 2 * j / (NL - 1)); return out; }
+export function drawWalkLegs(ctx, g, s, b, x, y, rr, ymaxPx, C, rgba, dt) { const LL = g.plan ? (g.legLen || 1) : 1, sp = Math.abs(b.vx || 0), mv = Math.min(1, sp / .35);
+  s.walkMv = (s.walkMv || 0) + (mv - (s.walkMv || 0)) * Math.min(1, dt * 8); s.gait = ((s.gait || 0) + sp * dt * BODY_PLAN.stepK / Math.max(.2, g.r * LL)) % (Math.PI * 2);
+  const m = s.walkMv, dir = (b.vx || 0) >= 0 ? 1 : -1, L = legList(g);
+  for (let j = 0; j < L.length; j++) { const u = L[j], sx = u < 0 ? -1 : 1, au = Math.abs(u), ph = s.gait + (j % 2 ? Math.PI : 0) + j * .7,
+      hx = x + u * rr * .36, hy = y + ymaxPx * .72, fx0 = x + u * rr * (.48 + .25 * (LL - 1)) + sx * au * rr * .1 * (LL - 1), fy0 = y + ymaxPx + rr * .22 * LL,
+      fx = fx0 + Math.sin(ph) * rr * BODY_PLAN.swing * LL * m * dir, fy = fy0 - Math.max(0, Math.cos(ph)) * rr * BODY_PLAN.lift * LL * m, wt = rr * .085 / Math.sqrt(LL), wb = rr * .06 / Math.sqrt(LL);
+    ctx.fillStyle = rgba(j % 2 ? C.deep : C.base, 1); ctx.beginPath(); ctx.moveTo(hx - wt, hy); ctx.lineTo(hx + wt, hy); ctx.lineTo(fx + wb, fy); ctx.lineTo(fx - wb, fy); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = rgba(C.deep, 1); ctx.beginPath(); ctx.ellipse(fx + sx * rr * .03, fy, rr * .1, rr * .055, 0, 0, Math.PI * 2); ctx.fill(); } }

@@ -106,6 +106,7 @@ world.attachPanel(panel && panel.root || document.getElementById('dev'));
 const systems = createSystems({ sim, bus, music, harmony, autojam, world, sing, render, canvas, panel, persist, brain });   // SYSTEMS track: songs, river DAW, save, spawn, undo, helper, mouth, walk, fusions, plants, harmony bank
 systems.attachPanel(panel && panel.root || document.getElementById('dev'));
 const traditions = createTraditions({ sim, bus, music, harmony, world });   // TRADITIONS wave 1: one per planet (seed + land lean); tuning, tempo, feel, cycle, lean, drone, song shape; aura data hooks only
+systems.switches.push({ k: 'walkLegs', label: 'walking legs: near ohms step with their legs as they move (far ohms keep standing legs; off = legs always standing)', get: () => BODY_PLAN.walk, set: v => { BODY_PLAN.walk = !!v; } });
 systems.switches.push({ k: 'bodyPlans', label: 'body plans (first game): blob / shell / serpent / strider / drum-belly / cluster / floater from the instrument, gene outlines, legs, tails, spikes, fronds, feelers, keels, bands, plates, bubbles, serpent segments (off = the v0.0.30 round / long / lobed bodies)', get: () => BODY_PLAN.on, set: v => { BODY_PLAN.on = !!v; for (const o of sim.ohms) if (o.scale === 'ohm' && o.g && sim.regrow) { const f = o.g.float; sim.regrow(o); o.g.float = f; } } });
 // GUEST ACCENT (Wilbow 9:37 / 9:39 PM Oct 29): ohms carried to another planet keep their home tradition and play its accent inside the host jam's frame
 const guests = createGuests({ sim, bus, music, traditions, persist });
