@@ -32,7 +32,7 @@ Every AI session gets an ID: **`JO-<YYYYMMDD>-<NN>-<who>-<item>`** (date it star
 
 ## Reports (every time)
 - Short: what changed in player terms, what to try on the phone.
-- **Unanswered approvals first**, numbered, each with a recommendation, answerable in one line ("1 merge, 3 keep").
+- **Unanswered approvals first, as tap cards** when the tool can show them (Claude: the question cards; Wilbow 8:33 AM Oct 30: "quick approval like cards in grok bot"), else numbered and answerable in one line ("1 merge, 3 keep"). Each item says concretely what he will see or hear, where, and its switch; one recommendation marked; always a "not tried yet" option for things that need the phone.
 - **Current APK** and how to get it (release page `releases/tag/latest-build`, file `JourneyOhm-b<N>-<date>.apk`; the game's dev button shows `dev · b<N>`).
 - **Efficiency line**: any drain noticed this session and its simple fix.
 
