@@ -20,7 +20,7 @@ import { shapeK, extentK, appRoom, paintBehind, paintOnSkin, stepSegments, paint
 export const OHM_CHAR = { on: true, face: true, skin: true, posture: true, shadow: true, legs: true, erase: 1.04,
   tune: true, tuneLife: 1.4, tuneRise: .09, tuneA: .62, tuneR: .78, tuneSettle: .55, tuneDeep: .08, tuneMax: 2, tuneCol: [255, 206, 140],
   sat: [.08, .28], lit: [.38, .5], xpFull: 60, blinkMin: 3.2, blinkVar: 3.8, blinkLen: .14,
-  squash: .07, settle: .035, lean: .12, swell: .07, shadowA: .45, floatShadowA: .24, minRd: 5, maxRd: 150, gazeStep: .35, settleN: 8, gestSteps: 4, gestLead: .1, gestHold: 16, gestSettleN: 0, shearMin: .08, fullN: [14, 10, 6, 3], maxN: [24, 24, 24, 8], erasepx: 2.4, claim: true, claimN: [22, 20, 14, 6], faceMinPx: 6 };
+  squash: .07, settle: .035, lean: .12, swell: .07, shadowA: .45, floatShadowA: .24, minRd: 5, maxRd: 150, gazeStep: .35, settleN: 8, gestSteps: 4, gestLead: .1, gestHold: 16, gestSettleN: 0, shearMin: .08, fullN: [14, 10, 6, 3], maxN: [24, 24, 24, 8], erasepx: 2.4, claim: true, claimN: [22, 20, 14, 3], faceMinPx: 6 };
 const PAT = { folk: 'dapple', celtic: 'dapple', gamelan: 'band', japan: 'band', wafrica: 'band', raga: 'speckle', maqam: 'speckle', techno: 'speckle' };
 const BYN = new Map(); for (const t of TRADITIONS) { BYN.set(t.id, t); for (const n of t.names) BYN.set(n, t); }
 const hashS = v => { let h = 2166136261; const s = String(v == null ? '' : v); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
