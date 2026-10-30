@@ -9,6 +9,7 @@ Claude, Grok, Gemini, Copilot, Cursor, Codex or anything else: these rules are t
 5. **Every pull request carries its own wrap-up:** Wilbow's new words (verbatim, MDT) appended to docs/WILBOW_VERBATIM.md, BOARD.md updated, SUMMARY.md line for approved game changes, a SESSION_LOG line. A GitHub check fails game changes without a BOARD.md update.
 6. **Every report:** unanswered approvals first (numbered, with a recommendation), the current APK and how to get it (releases/tag/latest-build, `JourneyOhm-b<N>-<date>.apk`; dev button shows `dev · b<N>`), one efficiency line.
 7. **Checks cheapest first:** syntax, the 1-3 tests for the area, one look at phone speed; Wilbow's phone test is final. A fix failing twice: stop and report.
+7b. **Accountability (EFFICIENCY.md):** cheap work just happens; medium work is named in the report; heavy work (repeated runs, rebuilds, second attempts, big refactors, long jobs) needs Wilbow's OK first. Every report names your own and other AIs' waste with a fix, and the session's line in docs/SESSION_LOG.md records heavy actions and waste. Read your tool's last log line before starting.
 8. **New features go behind dev-panel switches;** off = exactly as before. Nothing is removed without asking.
 9. **Never** commit or paste keystores, passwords or tokens. The test key in android/keystores is the only key in the repo.
 
