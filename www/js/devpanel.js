@@ -16,11 +16,15 @@ export function createPanel(ctx) {
   const root = document.createElement('div'); root.id = 'dev'; document.body.appendChild(root);
   const tog = document.createElement('button'); tog.id = 'devtog'; tog.textContent = 'dev'; document.body.appendChild(tog);
   let open = false;   // starts CLOSED every launch (tap 'dev' to open)
+  // WHICH BUILD IS THIS (Wilbow 11:57 PM Oct 29 "make sure there's no confusion between file versions"): CI writes www/build.json (build number,
+  // commit, date); the dev button and the panel header show it, and it matches the APK's file name (JourneyOhm-b<N>-<date>.apk). Local runs: no file.
+  fetch('build.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(b => { if (!b) return; const t = `build ${b.build} · ${b.date} · ${b.sha}`;
+    tog.textContent = 'dev · b' + b.build; const h = root.querySelector('#dv-build'); if (h) h.textContent = 'Journey Ohm ' + t; globalThis.JO_BUILD = b; }).catch(() => {});
   const show = () => { root.style.display = open ? 'block' : 'none'; }; show();   // systems: was swallowed by the comment above (show undefined)
   tog.addEventListener('pointerdown', e => { e.stopPropagation(); open = !open; localStorage.setItem('jo.devOpen', open ? '1' : '0'); show(); });
   root.addEventListener('pointerdown', e => e.stopPropagation());
   const sec = (id, title, body) => `<details id="${id}"><summary>${title}</summary>${body}</details>`;
-  root.innerHTML = `<div class="sec"><b>Journey Ohm dev 0.0.6</b> <span id="dv-seed"></span></div><pre id="dv-meter" style="font-size:15px;font-weight:bold;margin:2px 0"></pre><pre id="dv-live"></pre>
+  root.innerHTML = `<div class="sec"><b id="dv-build">Journey Ohm (local build)</b> <span id="dv-seed"></span></div><pre id="dv-meter" style="font-size:15px;font-weight:bold;margin:2px 0"></pre><pre id="dv-live"></pre>
   <div class="row"><button id="dv-new">new seed</button><button id="dv-test">self-test 60 s</button><button id="dv-stop">silence</button></div>
   ${sec('dv-world', 'world: heartbeat, drone, tempo, om, proposals', '<div id="dv-w"></div>')}
   ${sec('dv-snd', 'sounds: save / load', '<div class="row"><input id="dv-name" placeholder="name" size="12"><button id="dv-save">save</button></div><div class="row"><select id="dv-list"></select><button id="dv-load">load</button></div><pre id="dv-store"></pre>')}

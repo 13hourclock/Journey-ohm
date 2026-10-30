@@ -7,8 +7,9 @@ android {
         applicationId "com.lensure.journeyohm"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 30
-        versionName "0.0.30"
+        // CI passes -PbuildNum=<GitHub run number>: every build gets a higher versionCode (Android only installs an update that is newer)
+        versionCode (project.findProperty('buildNum') ? 1000 + (project.findProperty('buildNum') as int) : 30)
+        versionName (project.findProperty('buildNum') ? "0.0.30-b" + project.findProperty('buildNum') : "0.0.30")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,7 +17,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // ONE shared test key for every debug build (android/keystores/journeyohm-test.keystore, standard 'android' test passwords): builds install
+    // over each other on the phone and keep the saved world. NOT a release key: release signing uses the owner's key from CI secrets only.
+    signingConfigs {
+        test {
+            storeFile file('../keystores/journeyohm-test.keystore')
+            storePassword 'android'
+            keyAlias 'journeyohm-test'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.test
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

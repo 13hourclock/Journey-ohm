@@ -13,6 +13,9 @@ on:
     branches: [master, main]
   workflow_dispatch:
 
+permissions:
+  contents: write   # lets the build publish the APK to the 'latest-build' release (one fixed phone download link)
+
 jobs:
   apk:
     runs-on: ubuntu-24.04   # pinned: ubuntu-latest moved to Ubuntu 26 on Oct 19 2026 and the SDK setup action failed there
@@ -34,6 +37,8 @@ jobs:
           SM="$SDK/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SM" --licenses > /dev/null || true
           "$SM" "platforms;android-36" "build-tools;35.0.0" "platform-tools" > /dev/null
+      - name: Stamp the build number into the game (dev button + panel header show it)
+        run: echo "{\"build\":${{ github.run_number }},\"sha\":\"${GITHUB_SHA::7}\",\"date\":\"$(date -u +%Y-%m-%d)\"}" > www/build.json && cat www/build.json
       - name: Install and sync
         run: |
           npm ci --ignore-scripts
@@ -47,7 +52,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew   # uploads through the GitHub website drop the executable bit
-          ./gradlew --no-daemon assembleDebug
+          ./gradlew --no-daemon assembleDebug -PbuildNum=${{ github.run_number }}
       - name: Signed release APK (only if keystore secrets are set)
         if: ${{ env.KS != '' }}
         env:
@@ -57,7 +62,7 @@ jobs:
         working-directory: android
         run: |
           echo "$KS" | base64 -d > "$RUNNER_TEMP/release.jks"
-          ./gradlew --no-daemon assembleRelease
+          ./gradlew --no-daemon assembleRelease -PbuildNum=${{ github.run_number }}
           BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
           U=app/build/outputs/apk/release/app-release-unsigned.apk
           $BT/zipalign -f -p 4 $U app/build/outputs/apk/release/aligned.apk
@@ -66,10 +71,20 @@ jobs:
           rm -f "$RUNNER_TEMP/release.jks" app/build/outputs/apk/release/aligned.apk
       - name: Name the APKs by version
         run: |
-          V=$(node -p "require('./package.json').version")
+          # ONE file per build, named by build number and date (the same number the game's dev button shows): JourneyOhm-b<N>-<date>.apk
+          N=${{ github.run_number }}; D=$(date -u +%Y-%m-%d)
           mkdir out
-          cp android/app/build/outputs/apk/debug/app-debug.apk out/JourneyOhm-v$V-debug.apk
-          [ -f android/app/build/outputs/apk/release/JourneyOhm-release.apk ] && cp android/app/build/outputs/apk/release/JourneyOhm-release.apk out/JourneyOhm-v$V.apk || true
+          cp android/app/build/outputs/apk/debug/app-debug.apk out/JourneyOhm-b$N-$D.apk
+          [ -f android/app/build/outputs/apk/release/JourneyOhm-release.apk ] && cp android/app/build/outputs/apk/release/JourneyOhm-release.apk out/JourneyOhm-b$N-$D-release.apk || true
+      - name: Publish to the fixed download link (release 'latest-build')
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          N=${{ github.run_number }}
+          gh release delete latest-build -y --cleanup-tag 2>/dev/null || true
+          gh release create latest-build out/*.apk --target "$GITHUB_SHA" --title "Build $N ($(date -u +'%Y-%m-%d'), ${GITHUB_SHA::7})" \
+            --notes "The newest build only (older builds are removed so there is one file). Tap JourneyOhm-b$N-....apk to download, then open it from Files > Downloads. The game's dev button shows 'dev · b$N' when this build is installed. Installs as an update over build 16 and later (earlier builds: uninstall first)."
       - uses: actions/upload-artifact@v4
         with:
           name: journey-ohm-apk
