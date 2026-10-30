@@ -20,7 +20,7 @@ import { shapeK, extentK, appRoom, paintBehind, paintOnSkin, stepSegments, paint
 export const OHM_CHAR = { on: true, face: true, skin: true, posture: true, shadow: true, legs: true, erase: 1.04,
   tune: true, tuneLife: 1.4, tuneRise: .09, tuneA: .62, tuneR: .78, tuneSettle: .55, tuneDeep: .08, tuneMax: 2, tuneCol: [255, 206, 140],
   sat: [.08, .28], lit: [.38, .5], xpFull: 60, blinkMin: 3.2, blinkVar: 3.8, blinkLen: .14,
-  squash: .07, settle: .035, lean: .12, swell: .07, shadowA: .45, floatShadowA: .24, minRd: 5, maxRd: 150, gazeStep: .35, settleN: 8, gestSteps: 4, gestLead: .1, gestHold: 16, gestSettleN: 0, shearMin: .08, fullN: [14, 10, 6, 3], maxN: [24, 24, 24, 8], erasepx: 2.4, claim: true, claimN: [22, 20, 14, 0], faceMinPx: 6 };
+  squash: .07, settle: .035, lean: .12, swell: .07, shadowA: .45, floatShadowA: .24, minRd: 5, maxRd: 150, gazeStep: .35, settleN: 8, gestSteps: 4, gestLead: .1, gestHold: 16, gestSettleN: 0, shearMin: .08, fullN: [14, 10, 6, 3], maxN: [24, 24, 24, 8], erasepx: 2.4, claim: true, claimN: [22, 20, 14, 3], faceMinPx: 6 };
 const PAT = { folk: 'dapple', celtic: 'dapple', gamelan: 'band', japan: 'band', wafrica: 'band', raga: 'speckle', maqam: 'speckle', techno: 'speckle' };
 const BYN = new Map(); for (const t of TRADITIONS) { BYN.set(t.id, t); for (const n of t.names) BYN.set(n, t); }
 const hashS = v => { let h = 2166136261; const s = String(v == null ? '' : v); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
@@ -136,7 +136,7 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
   // with the character look last frame, well inside the rung cap (maxN) and render.js's list (LOOKN 64/40/24: claimN[q] leaves room for a reshuffle), on a rung that draws characters, is claimed:
   // the world skips its blob fill + stroke legs (look.legs) and K.draw skips the destination-out erase (~18 us an ohm on Skia, the biggest
   // single cost of the character look). Same look, same frame order; if the draw then fails, look.ohm's shaded path still paints a body.
-  K.claim = (o, r, m, lod) => { if (!K.on || O.claim === false || QL >= 3 || !m || m.b || m.c || (lod | 0) >= 2 || !o || !o.g || !o.body || o.rarity) return false;
+  K.claim = (o, r, m, lod) => { if (!K.on || O.claim === false || (!BODY_PLAN.low && (QL >= 3 || (lod | 0) >= 2)) || !m || m.b || m.c || !o || !o.g || !o.body || o.rarity) return false;
     const s = S.get(o); if (!s || s.dn !== FN - 1 || !(s.ci < (O.claimN[Math.min(3, QL)] | 0))) return false; const Rx = Math.round(r * m.a); if (Rx < O.minRd * 1.6 + 1 || Rx > O.maxRd - 1) return false;   // r here carries the world's breath (render.js's r does not): a margin both ways
     if (s.nb !== FN) CL.push(o); s.nb = FN; K.stats.claimed = (K.stats.claimed | 0) + 1; return true; };
   K.claimed = o => { const s = S.get(o); return !!s && s.nb === FN; };
@@ -153,7 +153,7 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     const tuneN = O.tune !== false && o.tune ? Math.min(O.tuneMax, o.tune.n | 0) : 0, tAge = s.tuT == null ? 1e9 : T - s.tuT;
     if (s.tuK == null) s.tuK = tuneN; else if (s.tuK !== tuneN && (tuneN < s.tuK || !(tAge >= 0 && tAge < O.tuneLife * O.tuneSettle))) s.tuK = tuneN;   // a new tune deepens the marks once the glow has settled in
     const hb = Math.round(s.heal * 3), xp = o.xp || 0, db = xp <= 0 ? 0 : 1 + Math.min(3, Math.floor(xp / O.xpFull * 3)), depth = db / 4 + O.tuneDeep * s.tuK, kind = PAT[s.trad.id] || 'dapple';
-    const legs = !!(O.legs && G.legs && b.ground && lod < 2), H = Math.ceil(Rd * ((G.plan ? extentK(G) : 1 + (G.lobeAmt || 0)) * Math.max(Math.sqrt(G.aspect || 1), 1 / Math.sqrt(G.aspect || 1)) * 1.04 + Math.max(O.legs && G.legs ? .32 * (G.plan ? (G.legLen || 1) : 1) : .08, appRoom(G)) + .1)) + 2, ab = aBk(), lk = light && light.color ? ((light.color[0] >> 5) << 6 | (light.color[1] >> 5) << 3 | light.color[2] >> 5) : 0;
+    const legs = !!(O.legs && G.legs && b.ground && (lod < 2 || BODY_PLAN.low)), H = Math.ceil(Rd * ((G.plan ? extentK(G) : 1 + (G.lobeAmt || 0)) * Math.max(Math.sqrt(G.aspect || 1), 1 / Math.sqrt(G.aspect || 1)) * 1.04 + Math.max(O.legs && G.legs ? .32 * (G.plan ? (G.legLen || 1) : 1) : .08, appRoom(G)) + .1)) + 2, ab = aBk(), lk = light && light.color ? ((light.color[0] >> 5) << 6 | (light.color[1] >> 5) << 3 | light.color[2] >> 5) : 0;
     // LOD tier: the first O.fullN[q] ohms drawn this frame (render.js draws focus-first) get the live face + live shadow; the rest a body sprite with the face
     // (resting lids, gaze ahead) and the contact shadow baked in = 1 drawImage. Hysteresis so an ohm does not flip tiers every frame.
     // a per-rung cap on character ohms (render.js draws focus-first): an ohm that had the character look last frame keeps it while there is
@@ -162,7 +162,7 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     const ni = NI++, fn = O.fullN[Math.min(3, QL)] | 0; s.full = s.full ? ni < fn * 1.35 + 1 : ni < fn; const full = s.full || !O.face, grounded0 = !!b.ground || !G.float;
     const ne = (G.eyes | 0) + 1, er = Rd * (.1 + .075 * cl(((G.social || .6) - .3) / .7)), irisK = .48 + .3 * cl(((G.hear || .7) - .4) / .6), FH = Math.ceil(Math.max(er * 2.25, Rd * .38) * (ne - 1) / 2 + er * 1.9) + 1;
     const bf = full || lod >= 3 ? null : { FH, ne, er, irisK, oq: openQ(1 - .3 * (G.calm || .5)) }, bs = !full && O.shadow && grounded0;
-    const live = !!(legs && full && BODY_PLAN.walk && lod < 2), legsB = legs && !live;   // O2 walking legs: near (full-tier) ohms draw their legs live, so the sprite is baked without them
+    const live = !!(legs && full && BODY_PLAN.walk && (lod < 2 || (BODY_PLAN.low && o === (sim && sim.ohm)))), legsB = legs && !live;   // O2 walking legs: near (full-tier) ohms draw their legs live, so the sprite is baked without them
     const shp = G._rare ? `r${G._rare}` : '', bk = `ohc:${o.id}${shp}${G.plan ? 'p' : ''}:${Rd}:${hb}${db}${s.tuK ? 't' + s.tuK : ''}${ab}:${lk}:${legsB ? 1 : 0}${bf ? 'f' + bf.oq : ''}${bs ? 's' : ''}`;
     let C = s.C; if (!C || s.ck !== hb * 7 + (s.trad.i | 0) * 31 + ((o.hue || 0) | 0) * 1009) { C = s.C = colsOf(o, s, hb, db); s.ck = hb * 7 + (s.trad.i | 0) * 31 + ((o.hue || 0) | 0) * 1009; }
     // ZOOM-SAFE (parent 11:52 PM: never a half bake, never a pop, never a rebake per zoom step): the last COMPLETE body sprite stays on
@@ -194,7 +194,7 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     const a0 = g.globalAlpha, c0 = g.globalCompositeOperation;
     // 1 erase the world blob (its own ring at the live size, a hair larger) and its legs
     if (s.nb === FN) K.stats.unerased = (K.stats.unerased | 0) + 1; else if (O.erase > 0) { g.globalAlpha = 1; g.globalCompositeOperation = 'destination-out'; const ke = k * (O.erase + O.erasepx / Math.max(4, r)); g.beginPath(); for (let i = 0; i < 10; i++) { const px = x + R[i * 4] * ke, py = y + R[i * 4 + 1] * ke; if (i) g.lineTo(px, py); else g.moveTo(px, py); } g.closePath();   // a straight 10-gon a hair larger than the blob's smooth ring (cheaper than its curves)
-    if (G.legs && b.ground && lod < 2) { const rr = G.r * k; for (const sx of [-1, 1]) { g.moveTo(x + sx * rr * .33, y + rr * .75); g.lineTo(x + sx * rr * .58, y + rr * .75); g.lineTo(x + sx * rr * .58, y + rr * 1.1); g.lineTo(x + sx * rr * .33, y + rr * 1.1); g.closePath(); } }
+    if (G.legs && b.ground && (lod < 2 || BODY_PLAN.low)) { const rr = G.r * k; for (const sx of [-1, 1]) { g.moveTo(x + sx * rr * .33, y + rr * .75); g.lineTo(x + sx * rr * .58, y + rr * .75); g.lineTo(x + sx * rr * .58, y + rr * 1.1); g.lineTo(x + sx * rr * .33, y + rr * 1.1); g.closePath(); } }
     g.fill(); K.stats.erased++; g.globalCompositeOperation = 'source-over'; }
     // 2 contact shadow (grounded: under the feet; floater: on the ground below, smaller + fainter with height)
     if (O.shadow && !(hasS && grounded)) { const sh = shadowSprite(); if (sh) { let rx = 0; for (let i = 0; i < 10; i++) rx = Math.max(rx, Math.abs(R[i * 4] - mpx)); rx *= k * P11;
@@ -204,7 +204,7 @@ export function createOhmLook({ sprites, jobs, pend, light, sim, healOf, opts = 
     // 2a walking legs (O2): live, behind the body, stepping while it moves; the belly depth from the live ring
     if (live) { let ym = 0; for (let i = 0; i < 10; i++) ym = Math.max(ym, R[i * 4 + 1] - mpy); g.globalAlpha = a0; drawWalkLegs(g, G, s, b, x + mpx * k, y + mpy * k, G.r * k, ym * k, C, rgba, dt || 1 / 60); K.stats.walkLegs = (K.stats.walkLegs | 0) + 1; }
     // 2b serpent segments (body plans): a rope behind the head, each a shaded segment sprite, tail first; near ohms only
-    if (G.plan && G.plan.segments > 1 && lod < 2) { const seg = stepSegments(s, G, b, dt || 1 / 60); if (seg) { const [ldx, ldy] = lightDir(), SR = Math.max(8, Math.round(Rd * .8)), sk = `ohs:${o.id}:${SR}:${hb}:${ab}`;
+    if (G.plan && G.plan.segments > 1 && (lod < 2 || BODY_PLAN.low)) { const seg = stepSegments(s, G, b, dt || 1 / 60); if (seg) { const [ldx, ldy] = lightDir(), SR = Math.max(8, Math.round(Rd * .8)), sk = `ohs:${o.id}:${SR}:${hb}:${ab}`;
       const simg = sprites.map.has(sk) ? sprites.get(sk, SR * 2, SR * 2, null) : ready(sk, SR * 2, paintSegment(C, rgba, ldx, ldy)) || (s.segImg && s.segImg.img); if (simg) { s.segImg = { img: simg }; const u = r / G.r * br;
         for (let i = seg.length - 1; i >= 0; i--) { const q = seg[i], qx = x + (q.x - b.x) * u, qy = y + (q.y - b.y) * u, qr = q.r * u; g.globalAlpha = a0; g.drawImage(simg, qx - qr * 1.09, qy - qr * 1.09, qr * 2.18, qr * 2.18); } K.stats.segs = (K.stats.segs | 0) + seg.length; } } }
     // 3 the body, 4 the face (same transform: the face squashes / leans with the body)

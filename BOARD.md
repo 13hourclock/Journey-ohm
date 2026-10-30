@@ -66,6 +66,8 @@ says **which category each item is in**.
 |---|---|---|---|
 | F5 | Music | Samba iv and the jazz bridge (ii/IV, V/V) are still diatonic stand-ins (F3 covers blues V7, flamenco III, samba VI7) | open (ask first) |
 | F6 | Tech | The automatic APK build failed on every run since Oct 27 (Android SDK setup step); runner pinned to ubuntu-24.04, preinstalled SDK used | fixed, PR #8 |
+| F7 | Ohms | On a busy phone every ohm became a plain circle (the lowest detail rung skipped all body shapes); now ohms keep their real outline, the nearest 4 keep their full body, legs and features, the focus ohm keeps walking legs | fixed, PR #9, switch lowShapes |
+| F8 | Music | Audio static on the phone: the sound engine falls behind when many notes play at once (8-17 notes/s depending on how many jams form); present before Oct 29 too. Needs a stronger audio budget (fewer simultaneous voices when busy) | open, next |
 | F4 | Tech | tests/look_claim_test fails (already failing before Oct 29); tests/shape_test timing checks fail on a busy machine | open |
 
 ## 6. Housekeeping

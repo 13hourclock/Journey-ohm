@@ -9,6 +9,7 @@
 // (quality.js): resolution, ridgeline count, pattern detail. No shadowBlur / filters / getImageData.
 import { layout, cam, ZK, anchor, ohmVisible } from './view.js';
 import { drawOhms } from './ohmdraw.js';
+import { BODY_PLAN } from './bodyplan.js';
 import { toScreen } from './space.js';
 import { createLook } from './look/index.js';
 import { noLine, softRing, softDot, bindWorld } from './soft.js';   // v0.0.30 no outlines (GAMEDEV_SPEC part 2 B table)
@@ -263,7 +264,7 @@ export function createRender(canvas, sim, music, readScope, world, bus) {
     if (E && E.rain > .04 && !E.inCave && E.opts.weather && !(lsky && world.opts.skyDefer !== false)) rainEnv(E, world.opts.rainSkyScale !== false ? ss : sc, t);   // v0.0.30 A2 rainSkyScale: the rain streak length follows the sky's own scale (skyHold), not the ground's
     if (look.layer) look.layer(c, L, sc, st, 'over');
   };
-  const sp = {}, vis = [], pool = [], byK = (a, b) => a.k - b.k, TINY = 7, LOOKN = [64, 40, 24];   // PROPOSAL: TINY px; look.ohm on at most LOOKN[q] ohms (most important first)
+  const sp = {}, vis = [], pool = [], byK = (a, b) => a.k - b.k, TINY = 7, LOOKN = [64, 40, 24, 4];   // [3]: lowShapes (BODY_PLAN.low) keeps the baked character look on the nearest 4 at the lowest rung   // PROPOSAL: TINY px; look.ohm on at most LOOKN[q] ohms (most important first)
   const rgbC = new Map(), rgbOf = (h, sa, li) => { const k = (Math.round(h) % 360) * 64 + Math.round(li * 40); let c = rgbC.get(k); if (c) return c;
     const a = sa * Math.min(li, 1 - li), f = n => { const kk = (n + h / 30) % 12; return Math.round(255 * (li - a * Math.max(-1, Math.min(kk - 3, 9 - kk, 1)))); };
     c = [f(0), f(8), f(4)]; rgbC.set(k, c); return c; };
@@ -353,7 +354,7 @@ export function createRender(canvas, sim, music, readScope, world, bus) {
       if (!tiny && world.rare && world.rare.draw) world.rare.draw(g, W, H, look, 0);   /* rare ohms (rare.js): aura behind the body */
       if (!tiny) drawOhms(g, sim, W, H, look);
       if (!tiny && world.rare && world.rare.draw) world.rare.draw(g, W, H, look, 1);   /* rare ohms: shimmer in front */
-      if ((tiny || (look.ohm && qd < 3)) && sim.ohms.length) { vis.length = 0;
+      if ((tiny || (look.ohm && (qd < 3 || BODY_PLAN.low))) && sim.ohms.length) { vis.length = 0;
         for (const q of sim.ohms) { if (q.parked) continue; const s = toScreen(W, H, sim.cam, q.body.x, q.body.y, sp), r = (q.g ? q.g.r : 1) * s.s; if (s.x < -r || s.x > W + r || s.y < -r || s.y > H + r) continue;
           const it = pool[vis.length] || (pool[vis.length] = { x: 0, y: 0, r: 0, rgb: null, glow: 0, o: null, k: 0 }); it.x = s.x; it.y = s.y; it.r = r; it.o = q;
           it.glow = (q.glow || 0) + Math.min(1, (q.look && q.look.glow) || 0) * .6; const dx = s.x - L.cx, dy = s.y - L.cy;

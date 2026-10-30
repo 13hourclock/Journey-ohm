@@ -3,7 +3,8 @@
 // 2+ crowd ohms as flat discs. No allocation per ohm beyond Canvas gradients for the halo / focus body.
 import { toScreen } from './space.js';
 import { RING } from './genes.js';
-import { opt } from './soft.js';   // v0.0.30 B10-B12 switches (world.opts haloMute / lookOhmBody / lookLegs)
+import { opt } from './soft.js';
+import { BODY_PLAN } from './bodyplan.js';   // lowShapes: low detail draws the real outline, not a circle   // v0.0.30 B10-B12 switches (world.opts haloMute / lookOhmBody / lookLegs)
 const P = {}, X = new Float32Array(RING), Y = new Float32Array(RING);
 // v0.0.30 GAMEDEV_SPEC part 2: B11 haloMute - the halo at 45% saturation (off = 90%: too much colour, Wilbow 10:06 PM); B12 look.ohmBody(g, o, s, r, br)
 // paints the body when Visuals add it (the plain fill is skipped; eyes / legs still drawn here); B10 look.legs(g, o, s, r) paints the legs (off / absent = the stroke legs; rare ohms always keep the stroke legs).
@@ -18,7 +19,10 @@ export function drawOhms(g, sim, W, H, look) {
     if (s.x < -r * 3 || s.x > W + r * 3 || s.y < -r * 3 || s.y > H + r * 3) continue;
     if (lod < 1 || focus) { const hr = r * (2 + gl), halo = g.createRadialGradient(s.x, s.y, r * .3, s.x, s.y, hr); halo.addColorStop(0, `hsla(${o.hue},${hs}%,65%,${(focus ? .25 : .12) + gl * .3})`); halo.addColorStop(1, 'hsla(0,0%,0%,0)');
       g.fillStyle = halo; g.beginPath(); g.arc(s.x, s.y, hr, 0, 7); g.fill(); }
-    if (lod >= 2 && !focus) { g.fillStyle = `hsl(${o.hue},60%,${42 + gl * 25}%)`; g.beginPath(); g.arc(s.x, s.y, r, 0, 7); g.fill(); continue; }
+    if (lod >= 2 && !focus && !BODY_PLAN.low) { g.fillStyle = `hsl(${o.hue},60%,${42 + gl * 25}%)`; g.beginPath(); g.arc(s.x, s.y, r, 0, 7); g.fill(); continue; }
+    if (lod >= 2 && !focus) { if (lb && look.ohmBody(g, o, s, r, br) === true) continue;   // lowShapes: the look still draws its baked body for the nearest few
+      const R = b.ring, k = u * br; g.fillStyle = `hsl(${o.hue},45%,${40 + gl * 22}%)`; g.beginPath(); g.moveTo(s.x + (R[(RING - 1) * 4] + R[0]) / 2 * k, s.y + (R[(RING - 1) * 4 + 1] + R[1]) / 2 * k);
+      for (let i = 0; i < RING; i++) { const j = (i + 1) % RING; g.quadraticCurveTo(s.x + R[i * 4] * k, s.y + R[i * 4 + 1] * k, s.x + (R[i * 4] + R[j * 4]) / 2 * k, s.y + (R[i * 4 + 1] + R[j * 4 + 1]) / 2 * k); } g.fill(); continue; }   // the real outline, flat (same cost class as the old disc)
     if (lb && look.ohmBody(g, o, s, r, br) === true) { /* Visuals' body */ } else {
     const R = b.ring, k = u * br; for (let i = 0; i < RING; i++) { X[i] = s.x + R[i * 4] * k; Y[i] = s.y + R[i * 4 + 1] * k; }
     g.beginPath(); g.moveTo((X[RING - 1] + X[0]) / 2, (Y[RING - 1] + Y[0]) / 2);
