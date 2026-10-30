@@ -61,9 +61,11 @@ const walk = (T, r, start, len, endOn) => { const out = [start]; for (let i = 1;
   if (endOn != null) out[len - 1] = endOn; return out; };
 export function songFromTradition(T, seed, name) { const r = rng(hsh(T.seed, seed)), sec = {}; const A = walk(T, r, 0, T.len, 4), B = walk(T, r, T.bStart, T.len, 4), C = walk(T, r, T.bStart === 5 ? 3 : 5, T.len, 0);
   sec.A = A; if (T.form.includes('B')) sec.B = B; if (T.form.includes('C')) sec.C = C;
+  // wave 2: a tradition with fixed charts (12-bar blues, ii-V-I, iv-II-I...) plays one of them (picked by the song seed); the hook and cadence as before
+  let form = T.form, end = T.cad; if (T.charts && T.charts.length) { const ch = T.charts[Math.floor(r() * T.charts.length)]; for (const k in ch.sec) sec[k] = ch.sec[k].slice(); for (const k of Object.keys(sec)) if (!ch.sec[k]) delete sec[k]; if (ch.form) form = ch.form; if (ch.end) end = ch.end; }
   const tones = [A[0], A[0] + 2, A[0] + 4, A[0] + 7], hook = []; let b = 0, d = tones[Math.floor(r() * 3)];
   for (let bar = 0; bar < T.hookBars; bar++) for (const len of T.cells[bar % T.cells.length]) { hook.push(N(d, b, len, .6 + r() * .3)); b += len; d += r() < .6 ? (r() < .5 ? 1 : -1) : (r() < .5 ? 2 : -2); if (len >= 2) d = tones[Math.floor(r() * 3)]; }
-  return { id: 'w.' + T.seed.toString(36) + '.' + seed.toString(36), name: name || 'song ' + seed.toString(36).slice(-4), origin: 'world', planetSeed: T.seed, sec, form: T.form.slice(), end: T.cad.slice(), hook, hookBars: T.hookBars }; }
+  return { id: 'w.' + T.seed.toString(36) + '.' + seed.toString(36), name: name || 'song ' + seed.toString(36).slice(-4), origin: 'world', planetSeed: T.seed, sec, form: form.slice(), end: end.slice(), hook, hookBars: T.hookBars }; }
 export function createSongs(sim, bus, music, harmony, autojam, opts = {}) {
   const O = { ...SONG_OPTS, ...opts }, S = { opts: O, lib: new Map(), groups: [], jams: new Map(), met: new Set(), lastBar: -1, ms: 0, carrier: null, pushB: -99, starts: 0, caught: 0, ends: 0, sig: {} };
   for (const s of DEV_SONGS) S.lib.set(s.id, { ...s, plays: 0, made: 0 });
@@ -118,7 +120,8 @@ export function createSongs(sim, bus, music, harmony, autojam, opts = {}) {
   const caught = J => { const t = T(), r = rng(hsh(J.first, J.bars, t.seed)), hk = J.best, ids = J.key === 'you' ? null : J.key.split('-').map(Number);
     const members = ids ? ids.map(i => sim.byId.get(i)).filter(Boolean) : [sim.jam && sim.jam.partner].filter(Boolean); if (!members.length) { S.jams.delete(J.key); return; }
     const roots = J.roots.length >= 4 ? J.roots.slice(-t.len) : walk(t, r, hk.root || 0, t.len, 4); while (roots.length < t.len) roots.push(roots[roots.length - 1]); roots[0] = hk.root || roots[0];
-    const sec = { A: roots, B: walk(t, r, t.bStart, t.len, 4) }; if (t.form.includes('C')) sec.C = walk(t, r, 5, t.len, 0);
+    const ch = t.charts && t.charts.length ? t.charts[Math.floor(r() * t.charts.length)] : null;   // wave 2 charts: the contrasting sections come from the tradition's chart
+    const sec = { A: roots, B: ch && ch.sec.B ? ch.sec.B.slice() : walk(t, r, t.bStart, t.len, 4) }; if (t.form.includes('C')) sec.C = ch && ch.sec.C ? ch.sec.C.slice() : walk(t, r, 5, t.len, 0);
     const id = (J.key === 'you' ? 'p.' : 'g.') + Date.now().toString(36) + '.' + J.key.replace('-', '.'), s = S.add({ id, name: (J.key === 'you' ? 'our song ' : 'song ') + id.slice(2, 7), origin: J.key === 'you' ? 'player' : 'grown',
       planetSeed: t.seed, sec, form: t.form.includes('B') ? t.form.slice() : ['A', 'A', 'B', 'A'], end: t.cad.slice(), hook: hk.notes.map(n => ({ ...n })), hookBars: 1, cast: members.map(m => m.seed), from: J.key });
     S.caught++; S.jams.delete(J.key); bus.post({ type: 'song.caught', song: s, members });
@@ -212,7 +215,7 @@ export function createSongs(sim, bus, music, harmony, autojam, opts = {}) {
     for (const J of S.jams.values()) { if (J.last >= bar - 2) { J.roots.push(music.chord ? music.chord.root : 0); if (J.roots.length > 16) J.roots.shift(); } else if (J.last < bar - 32) S.jams.delete(J.key); }
     // the song carrying the chords: the strongest one near you, unless you moved the harmony yourself in the last 2 bars
     const cands = S.groups.filter(G => G.state === 'song' && G.k >= O.carry).sort((a, b) => b.k - a.k); S.carrier = cands[0] && music.beat() - S.pushB > 8 ? cands[0] : null;
-    if (S.carrier) { const G = S.carrier, L = G.L || (G.L = barsOf(G.song)), bi = bar - G.start; if (bi >= 0 && bi < L.length) { const r = L[bi].r; if (!music.chord || music.chord.root !== r) { music.chord = { root: r, tones: [r, r + 2, r + 4] }; for (const f of music.listeners) f(); } } }
+    if (S.carrier) { const G = S.carrier, L = G.L || (G.L = barsOf(G.song)), bi = bar - G.start; if (bi >= 0 && bi < L.length) { const r = L[bi].r; if (!music.chord || music.chord.root !== r) { music.chord = { root: r, tones: music.tonesOf ? music.tonesOf(r) : [r, r + 2, r + 4] }; for (const f of music.listeners) f(); } } }
     for (const G of S.groups) { if (G.state === 'rest' && bar >= G.rest) { const s = pickNext(G); if (s) start(G, s, 0); } }
     S.qSorted = false; if (!O.spread && S.q.length) S.flushQ();
     for (const G of S.groups) if (G.state === 'song') { const was = G.settled; play(G, bar + 1); if (G.state === 'song' && bar + 1 - G.start === 0 && G.plays >= O.settle && bar - G.touch > 16) G.settled = 1; if (was && !G.settled) G.cache = null; }
