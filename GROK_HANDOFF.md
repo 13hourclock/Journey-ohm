@@ -2,6 +2,18 @@
 
 For Grok (or any AI) picking up work. Written Oct 29 2026 by Claude, at Wilbow's request (10:12 PM MDT, "Do all").
 
+## 0. Message to paste into Grok when Wilbow's usage is back
+
+> Read GROK_HANDOFF.md and BOARD.md in the private GitHub repo 13hourclock/Journey-ohm (Wilbow will add you if you can't open it). Then:
+> 1. **Release signing (board T2):** builds should also install over the installs you made with the lensure upload key. Help Wilbow add 4 GitHub Actions secrets to the repo (Settings -> Secrets and variables -> Actions): `KEYSTORE_BASE64` (base64 of lensure-upload.jks), `KEYSTORE_PASSWORD`, `KEY_ALIAS` (lensure), `KEY_PASSWORD`. Never paste the key or the passwords into chat, the repo or any doc; if you have no GitHub access, give Wilbow the steps and let him paste them himself. The workflow already signs a release APK when these exist.
+> 2. Catch up: SUMMARY.md (Oct 29 section at the top) and BOARD.md say what changed; build only what BOARD.md lists as DECIDED.
+> 3. Report back in short player terms.
+
+## 0b. Signing and versions (Oct 29)
+- Every **debug** build is signed with one shared **test key** in the repo (`android/keystores/journeyohm-test.keystore`, standard `android` passwords): builds install over each other on the phone. It is not a release key.
+- `versionCode` = 1000 + the GitHub run number (versionName `0.0.30-bN`), so every build is newer than the last, and newer than your v0.0.30 (versionCode 30).
+- The latest APK always sits at the fixed link `releases/download/latest-build/JourneyOhm-latest-debug.apk` (plus `JourneyOhm-latest.apk`, release-signed, once the secrets exist).
+
 ## 1. Read BOARD.md first, and follow its rules
 
 Wilbow, 9:57 PM MDT Oct 29: "My main problem has been development happening based on misunderstandings."
