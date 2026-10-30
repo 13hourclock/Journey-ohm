@@ -15,7 +15,7 @@ on:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # pinned: ubuntu-latest moved to Ubuntu 26 on Oct 19 2026 and the SDK setup action failed there
     timeout-minutes: 30
     env:
       KS: ${{ secrets.KEYSTORE_BASE64 }}
@@ -28,7 +28,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      - name: Android SDK (preinstalled on the runner; licenses + the platform and build tools this app needs)
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"; echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          SM="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SM" --licenses > /dev/null || true
+          "$SM" "platforms;android-36" "build-tools;35.0.0" "platform-tools" > /dev/null
       - name: Install and sync
         run: |
           npm ci --ignore-scripts
@@ -40,7 +45,9 @@ jobs:
           done
       - name: Debug APK
         working-directory: android
-        run: ./gradlew --no-daemon assembleDebug
+        run: |
+          chmod +x gradlew   # uploads through the GitHub website drop the executable bit
+          ./gradlew --no-daemon assembleDebug
       - name: Signed release APK (only if keystore secrets are set)
         if: ${{ env.KS != '' }}
         env:

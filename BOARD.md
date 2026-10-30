@@ -65,6 +65,7 @@ says **which category each item is in**.
 | ID | Area | What | Status |
 |---|---|---|---|
 | F5 | Music | Samba iv and the jazz bridge (ii/IV, V/V) are still diatonic stand-ins (F3 covers blues V7, flamenco III, samba VI7) | open (ask first) |
+| F6 | Tech | The automatic APK build failed on every run since Oct 27 (Android SDK setup step); runner pinned to ubuntu-24.04, preinstalled SDK used | fixed, PR #8 |
 | F4 | Tech | tests/look_claim_test fails (already failing before Oct 29); tests/shape_test timing checks fail on a busy machine | open |
 
 ## 6. Housekeeping
